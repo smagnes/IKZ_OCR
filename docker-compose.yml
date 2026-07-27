@@ -1,0 +1,146 @@
+version: '3.9'
+
+services:
+
+  ocr-api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    image: medyk-ocr-api:latest
+    container_name: medyk_ocr_api
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./api/.env
+    environment:
+      - DATABASE_URL=postgresql://medyk:medyk@postgres:5432/medykocr
+      - REDIS_URL=redis://redis:6379
+      - NATS_URL=nats://nats:4222
+      - PRELOAD_MODELS=true
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ocr_models:/root/.cache/huggingface
+    networks:
+      - medyk_net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
+
+  panel:
+    build:
+      context: ./panel
+      dockerfile: Dockerfile
+    image: medyk-ocr-panel:latest
+    container_name: medyk_panel
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+      - NEXT_PUBLIC_API_KEY=mk_prod_demo123
+    depends_on:
+      - ocr-api
+    networks:
+      - medyk_net
+
+  postgres:
+    image: ikz-gl.ib2.eu:5050/medyk/reg:postgres
+    container_name: medyk_postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=medyk
+      - POSTGRES_PASSWORD=medyk
+      - POSTGRES_DB=medykocr
+      - PGDATA=/var/lib/postgresql/data
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports:
+      - "5432:5432"
+    networks:
+      - medyk_net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U medyk -d medykocr"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: ikz-gl.ib2.eu:5050/medyk/reg:redis
+    container_name: medyk_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    networks:
+      - medyk_net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  nats:
+    image: ikz-gl.ib2.eu:5050/medyk/reg:nats
+    container_name: medyk_nats
+    restart: unless-stopped
+    ports:
+      - "4222:4222"
+      - "8222:8222"
+    networks:
+      - medyk_net
+
+  prometheus:
+    image: ikz-gl.ib2.eu:5050/medyk/reg:prometheus
+    container_name: medyk_prometheus
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=30d'
+    networks:
+      - medyk_net
+
+  grafana:
+    image: ikz-gl.ib2.eu:5050/medyk/reg:grafana
+    container_name: medyk_grafana
+    restart: unless-stopped
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=medyk2026
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+    depends_on:
+      - prometheus
+    networks:
+      - medyk_net
+
+volumes:
+  postgres_data:
+  redis_data:
+  prometheus_data:
+  grafana_data:
+  ocr_models:
+
+networks:
+  medyk_net:
+    driver: bridge

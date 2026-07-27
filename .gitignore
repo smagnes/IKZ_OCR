@@ -1,0 +1,48 @@
+# Environment
+api/.env
+.env
+*.env
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+env/
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Node
+panel/node_modules/
+panel/.next/
+panel/out/
+panel/.turbo/
+
+# Docker volumes
+data/
+postgres_data/
+redis_data/
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# Surya model cache (large, nie commitujemy modeli AI)
+models/
+*.safetensors
+*.ckpt
+*.bin

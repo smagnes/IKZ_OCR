@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IKZOCR — Oferta dla placówek medycznych</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: #F0F7FF;
+    color: #0F172A;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  .wrapper { max-width: 900px; margin: 0 auto; padding: 40px 24px 80px; }
+
+  /* NAV */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(11,26,48,0.96);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(56,189,248,0.15);
+    padding: 14px 32px;
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 48px;
+  }
+  .nav-logo { display: flex; align-items: center; gap: 10px; }
+  .nav-logo-icon {
+    width: 32px; height: 32px; border-radius: 9px;
+    background: linear-gradient(135deg, #38BDF8, #0284C7);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .nav-logo-icon svg { display: block; }
+  .nav-brand { font-size: 15px; font-weight: 600; color: #fff; }
+  .nav-tagline { font-size: 11px; color: #7DD3FC; margin-top: 1px; }
+  .nav-cta {
+    background: #0284C7; color: #fff;
+    border: none; padding: 9px 20px; border-radius: 9px;
+    font-size: 13px; font-weight: 600; cursor: pointer;
+    text-decoration: none; display: inline-block;
+  }
+  .nav-cta:hover { background: #0369A1; }
+
+  /* HERO */
+  .hero {
+    background: #0B1A30;
+    border-radius: 20px;
+    padding: 56px 48px;
+    margin-bottom: 48px;
+    position: relative; overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; top: -80px; right: -80px;
+    width: 340px; height: 340px; border-radius: 50%;
+    background: rgba(56,189,248,0.06);
+  }
+  .hero::after {
+    content: '';
+    position: absolute; bottom: -100px; right: 120px;
+    width: 240px; height: 240px; border-radius: 50%;
+    background: rgba(2,132,199,0.08);
+  }
+  .hero-pill {
+    display: inline-flex; align-items: center; gap: 7px;
+    background: rgba(56,189,248,0.12);
+    border: 1px solid rgba(56,189,248,0.25);
+    color: #38BDF8; font-size: 12px; font-weight: 500;
+    padding: 5px 14px; border-radius: 20px; margin-bottom: 20px;
+  }
+  .hero-pill-dot { width: 6px; height: 6px; border-radius: 50%; background: #38BDF8; }
+  .hero h1 { font-size: 38px; font-weight: 700; color: #fff; line-height: 1.2; margin-bottom: 16px; }
+  .hero h1 span { color: #38BDF8; }
+  .hero-sub { font-size: 16px; color: rgba(186,230,253,0.7); max-width: 520px; margin-bottom: 32px; }
+  .hero-stats { display: flex; gap: 40px; }
+  .hero-stat-val { font-size: 28px; font-weight: 700; color: #fff; }
+  .hero-stat-label { font-size: 12px; color: rgba(186,230,253,0.5); margin-top: 2px; }
+
+  /* SECTIONS */
+  section { margin-bottom: 56px; }
+  .section-header { display: flex; align-items: center; gap: 10px; margin-bottom: 24px; }
+  .section-bar { width: 4px; height: 20px; background: #0284C7; border-radius: 2px; }
+  h2 { font-size: 20px; font-weight: 600; color: #0B1A30; }
+
+  /* HOW IT WORKS */
+  .flow { display: flex; align-items: stretch; gap: 0; }
+  .flow-step {
+    flex: 1; background: #fff;
+    border: 1px solid #E0F2FE; border-radius: 14px;
+    padding: 20px 16px; text-align: center;
+  }
+  .flow-num {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: #0284C7; color: #fff;
+    font-size: 14px; font-weight: 600;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 12px;
+  }
+  .flow-step h3 { font-size: 14px; font-weight: 600; color: #0B1A30; margin-bottom: 6px; }
+  .flow-step p { font-size: 12px; color: #64748B; line-height: 1.5; }
+  .flow-arrow {
+    display: flex; align-items: center; justify-content: center;
+    width: 32px; flex-shrink: 0; color: #38BDF8; font-size: 20px;
+  }
+
+  /* PANEL SCREENSHOT */
+  .browser-frame {
+    background: #0B1A30; border-radius: 14px; overflow: hidden;
+    border: 1px solid rgba(56,189,248,0.15);
+    margin-bottom: 48px;
+  }
+  .browser-bar {
+    background: #07111F; padding: 10px 16px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .browser-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .browser-url {
+    font-size: 11px; color: rgba(186,230,253,0.35);
+    font-family: monospace; margin-left: 10px;
+  }
+  .browser-inner { display: flex; height: 340px; }
+  .b-sidebar { width: 180px; background: #0B1A30; border-right: 1px solid rgba(255,255,255,0.06); padding: 14px 10px; flex-shrink: 0; }
+  .b-logo-row { display: flex; align-items: center; gap: 9px; padding: 7px; margin-bottom: 16px; }
+  .b-logo-ico { width: 28px; height: 28px; border-radius: 8px; background: linear-gradient(135deg,#38BDF8,#0284C7); display:flex;align-items:center;justify-content:center; flex-shrink:0; }
+  .b-logo-name { font-size: 13px; font-weight: 600; color: #fff; }
+  .b-logo-sub { font-size: 10px; color: #7DD3FC; }
+  .b-nav { display: flex; align-items: center; gap: 9px; padding: 9px 10px; border-radius: 10px; font-size: 12px; margin-bottom: 2px; }
+  .b-nav.active { background: rgba(56,189,248,0.18); color: #fff; font-weight: 500; }
+  .b-nav:not(.active) { color: rgba(186,230,253,0.4); }
+  .b-nav-dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; flex-shrink:0; }
+  .b-section-label { font-size: 9px; color: rgba(56,189,248,0.45); letter-spacing: 0.1em; text-transform: uppercase; padding: 12px 10px 5px; font-weight: 600; }
+  .b-plan { background: rgba(2,132,199,0.18); border-radius: 9px; padding: 10px 12px; margin-top: 12px; }
+  .b-plan-row { display: flex; justify-content: space-between; margin-bottom: 6px; }
+  .b-plan-name { font-size: 10px; font-weight: 600; color: #7DD3FC; }
+  .b-plan-val { font-size: 9px; color: #38BDF8; }
+  .b-plan-bar { height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden; }
+  .b-plan-fill { height: 100%; width: 18.7%; background: linear-gradient(90deg,#38BDF8,#0284C7); }
+  .b-main { flex: 1; background: #F0F7FF; display: flex; flex-direction: column; }
+  .b-header { background: #fff; padding: 12px 18px; border-bottom: 1px solid #E0F2FE; display: flex; justify-content: space-between; align-items: center; }
+  .b-h-title { font-size: 13px; font-weight: 600; color: #0B1A30; }
+  .b-h-sub { font-size: 10px; color: #94A3B8; }
+  .b-h-btn { background: linear-gradient(135deg,#38BDF8,#0284C7); color: #fff; border: none; padding: 7px 14px; border-radius: 9px; font-size: 11px; font-weight: 600; }
+  .b-content { flex: 1; display: flex; overflow: hidden; }
+  .b-queue { width: 150px; background: #fff; border-right: 1px solid #E0F2FE; padding: 10px; flex-shrink: 0; }
+  .b-dz { border: 2px dashed #BAE6FD; border-radius: 10px; padding: 14px 8px; text-align: center; margin-bottom: 8px; }
+  .b-dz-ico { width: 28px; height: 28px; background: #E0F2FE; border-radius: 7px; display: flex; align-items: center; justify-content: center; margin: 0 auto 6px; }
+  .b-dz-t { font-size: 10px; color: #0369A1; font-weight: 500; }
+  .b-dz-s { font-size: 9px; color: #94A3B8; margin-top: 2px; }
+  .b-qitem { display: flex; align-items: center; gap: 7px; padding: 7px 6px; border-radius: 8px; margin-bottom: 3px; }
+  .b-qitem.sel { background: #E0F2FE; }
+  .b-qic { width: 24px; height: 24px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 11px; flex-shrink: 0; }
+  .b-qname { font-size: 10px; color: #334155; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .b-qsub { font-size: 9px; color: #94A3B8; }
+  .b-result { flex: 1; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; overflow: hidden; }
+  .b-badge { display: inline-block; background: linear-gradient(135deg,#38BDF8,#0284C7); color: #fff; font-size: 10px; font-weight: 600; padding: 4px 12px; border-radius: 20px; }
+  .b-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+  .b-ic { background: #fff; border: 1px solid #EFF6FF; border-radius: 10px; padding: 8px 10px; }
+  .b-ic-l { font-size: 8px; color: #7DD3FC; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 3px; }
+  .b-ic-v { font-size: 12px; font-weight: 500; color: #1E293B; }
+  .b-fields { background: #fff; border: 1px solid #EFF6FF; border-radius: 10px; overflow: hidden; }
+  .b-fh { background: #F0F7FF; padding: 6px 10px; font-size: 9px; font-weight: 600; color: #0369A1; text-transform: uppercase; letter-spacing: 0.06em; }
+  .b-frow { display: flex; justify-content: space-between; padding: 5px 10px; border-top: 1px solid #F0F7FF; }
+  .b-fk { font-size: 11px; color: #64748B; }
+  .b-fv { font-size: 11px; font-weight: 600; color: #1E293B; }
+  .b-fv.red { color: #DC2626; }
+  .b-conf { background: #fff; border: 1px solid #EFF6FF; border-radius: 10px; padding: 10px 12px; }
+  .b-conf-l { font-size: 9px; font-weight: 600; color: #0369A1; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
+  .b-cbar { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+  .b-ck { font-size: 10px; color: #64748B; width: 52px; }
+  .b-ct { flex: 1; height: 4px; background: #E0F2FE; border-radius: 2px; overflow: hidden; }
+  .b-cf { height: 100%; border-radius: 2px; }
+  .b-cp { font-size: 10px; font-weight: 600; color: #0284C7; width: 28px; text-align: right; }
+
+  /* FEATURES */
+  .feature-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .feature-card {
+    background: #fff; border: 1px solid #E0F2FE;
+    border-radius: 14px; padding: 20px;
+  }
+  .feature-icon {
+    width: 40px; height: 40px; border-radius: 10px;
+    background: #E0F2FE; display: flex; align-items: center; justify-content: center;
+    margin-bottom: 12px; font-size: 20px;
+  }
+  .feature-card h3 { font-size: 14px; font-weight: 600; color: #0B1A30; margin-bottom: 6px; }
+  .feature-card p { font-size: 12px; color: #64748B; line-height: 1.6; }
+
+  /* DOC TYPES */
+  .doctype-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  .doctype-card {
+    background: #fff; border: 1px solid #E0F2FE;
+    border-radius: 12px; padding: 16px;
+  }
+  .doctype-icon { font-size: 24px; margin-bottom: 8px; }
+  .doctype-card h3 { font-size: 13px; font-weight: 600; color: #0B1A30; margin-bottom: 4px; }
+  .doctype-card p { font-size: 11px; color: #64748B; line-height: 1.5; }
+
+  /* ALERTS */
+  .alerts-box {
+    background: #fff; border: 1px solid #E0F2FE;
+    border-radius: 14px; padding: 20px 24px;
+  }
+  .alert-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  .alert-tag {
+    font-size: 12px; padding: 5px 12px; border-radius: 20px;
+    background: #FEF2F2; color: #B91C1C; border: 1px solid #FECACA;
+    font-weight: 500;
+  }
+  .alerts-note { font-size: 12px; color: #64748B; margin-top: 12px; }
+
+  /* INTEGRATION */
+  .int-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .int-card {
+    background: #fff; border: 1px solid #E0F2FE;
+    border-radius: 14px; padding: 20px;
+  }
+  .int-card h3 { font-size: 14px; font-weight: 600; color: #0B1A30; margin-bottom: 6px; }
+  .int-card p { font-size: 12px; color: #64748B; line-height: 1.6; margin-bottom: 10px; }
+  .code-pill {
+    display: inline-block; font-family: 'Courier New', monospace;
+    font-size: 11px; background: #F0F7FF; border: 1px solid #BAE6FD;
+    color: #0284C7; padding: 3px 10px; border-radius: 6px;
+  }
+
+  /* PRICING */
+  .pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .plan-card {
+    background: #fff; border: 1px solid #E0F2FE;
+    border-radius: 16px; padding: 24px;
+  }
+  .plan-card.featured { border: 2px solid #0284C7; }
+  .plan-label {
+    display: inline-block; font-size: 11px; font-weight: 600;
+    padding: 4px 12px; border-radius: 20px; margin-bottom: 14px;
+  }
+  .plan-card h3 { font-size: 18px; font-weight: 600; color: #0B1A30; margin-bottom: 6px; }
+  .plan-price { font-size: 32px; font-weight: 700; color: #0B1A30; }
+  .plan-price span { font-size: 14px; color: #64748B; font-weight: 400; }
+  .plan-limit { font-size: 12px; color: #64748B; margin: 8px 0 16px; padding-bottom: 16px; border-bottom: 1px solid #E0F2FE; }
+  .plan-feature { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #475569; margin-bottom: 8px; }
+  .plan-check { color: #0284C7; font-size: 14px; font-weight: 600; }
+  .plan-cross { color: #CBD5E1; font-size: 14px; }
+  .plan-btn {
+    display: block; width: 100%; padding: 11px; border-radius: 10px;
+    font-size: 13px; font-weight: 600; cursor: pointer; border: none;
+    margin-top: 18px; text-align: center; text-decoration: none;
+  }
+
+  /* RODO */
+  .rodo-box {
+    background: #0B1A30; border-radius: 16px; padding: 28px 32px;
+    display: flex; align-items: flex-start; gap: 20px;
+  }
+  .rodo-icon {
+    width: 48px; height: 48px; border-radius: 12px;
+    background: rgba(56,189,248,0.15);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; font-size: 24px;
+  }
+  .rodo-box h3 { font-size: 16px; font-weight: 600; color: #fff; margin-bottom: 8px; }
+  .rodo-box p { font-size: 13px; color: rgba(186,230,253,0.65); line-height: 1.7; }
+  .rodo-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+  .rodo-tag {
+    font-size: 11px; padding: 4px 11px; border-radius: 20px;
+    background: rgba(56,189,248,0.12); color: #38BDF8;
+    border: 1px solid rgba(56,189,248,0.2);
+  }
+
+  /* CONTACT */
+  .contact-box {
+    background: #fff; border: 1px solid #E0F2FE;
+    border-radius: 16px; padding: 32px;
+    text-align: center;
+  }
+  .contact-box h3 { font-size: 20px; font-weight: 600; color: #0B1A30; margin-bottom: 8px; }
+  .contact-box p { font-size: 14px; color: #64748B; margin-bottom: 24px; }
+  .contact-btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+  .btn-primary {
+    background: #0284C7; color: #fff;
+    padding: 12px 28px; border-radius: 11px;
+    font-size: 14px; font-weight: 600;
+    border: none; cursor: pointer; text-decoration: none;
+    display: inline-block;
+  }
+  .btn-primary:hover { background: #0369A1; }
+  .btn-secondary {
+    background: #F0F7FF; color: #0284C7;
+    padding: 12px 28px; border-radius: 11px;
+    font-size: 14px; font-weight: 600;
+    border: 1px solid #BAE6FD; cursor: pointer; text-decoration: none;
+    display: inline-block;
+  }
+  .btn-secondary:hover { background: #E0F2FE; }
+
+  /* FOOTER */
+  footer {
+    background: #0B1A30; padding: 24px 32px;
+    margin-top: 0;
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 12px;
+  }
+  .footer-logo { display: flex; align-items: center; gap: 9px; }
+  .footer-brand { font-size: 14px; font-weight: 600; color: #fff; }
+  .footer-legal { font-size: 11px; color: rgba(186,230,253,0.35); }
+  .footer-right { font-size: 11px; color: rgba(186,230,253,0.35); text-align: right; }
+
+  @media (max-width: 640px) {
+    nav { padding: 12px 16px; }
+    .nav-tagline { display: none; }
+    .wrapper { padding: 20px 16px 60px; }
+
+    .hero { padding: 32px 24px; }
+    .hero h1 { font-size: 26px; }
+    .hero-sub { font-size: 14px; }
+    .hero-stats { gap: 20px; flex-wrap: wrap; }
+    .hero-stat-val { font-size: 22px; }
+
+    .flow { flex-direction: column; gap: 8px; }
+    .flow-arrow { transform: rotate(90deg); width: 100%; height: 20px; }
+
+    .browser-frame { overflow-x: auto; }
+    .browser-inner { width: 700px; height: 280px; }
+    .b-sidebar { width: 140px; }
+    .b-queue { width: 120px; }
+
+    .feature-grid { grid-template-columns: 1fr; }
+    .doctype-grid { grid-template-columns: 1fr 1fr; }
+    .pricing-grid { grid-template-columns: 1fr; }
+    .int-grid { grid-template-columns: 1fr; }
+
+    .rodo-box { flex-direction: column; padding: 20px; }
+    .contact-btns { flex-direction: column; }
+    .btn-primary, .btn-secondary { text-align: center; }
+
+    footer { flex-direction: column; gap: 8px; }
+    .footer-right { text-align: left; }
+
+    h2 { font-size: 17px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">
+    <div class="nav-logo-icon">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+        <path d="M9 12h6M12 9v6M12 3C7.03 3 3 7.03 3 12s4.03 9 9 9 9-4.03 9-9-4.03-9-9-9z" stroke="white" stroke-width="2.2" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div>
+      <div class="nav-brand">IKZOCR</div>
+      <div class="nav-tagline">Platforma AI dla medycyny</div>
+    </div>
+  </div>
+  <a href="mailto:kontakt@ikzocr.pl" class="nav-cta">Skontaktuj się</a>
+</nav>
+
+<div class="wrapper">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-pill">
+      <div class="hero-pill-dot"></div>
+      Pierwsze w Polsce rozwiązanie AI dla dokumentów medycznych
+    </div>
+    <h1>Automatyczny OCR<br>dla <span>dokumentów medycznych</span></h1>
+    <p class="hero-sub">Wgrywasz zdjęcie recepty, morfologii lub wyniku badania — IKZOCR w kilka sekund wyciąga ustrukturyzowane dane gotowe do dalszego przetwarzania. Zero przepisywania, zero błędów.</p>
+    <div class="hero-stats">
+      <div>
+        <div class="hero-stat-val">9</div>
+        <div class="hero-stat-label">typów dokumentów</div>
+      </div>
+      <div>
+        <div class="hero-stat-val">&lt;10s</div>
+        <div class="hero-stat-label">czas skanu</div>
+      </div>
+      <div>
+        <div class="hero-stat-val">98%+</div>
+        <div class="hero-stat-label">dokładność OCR</div>
+      </div>
+      <div>
+        <div class="hero-stat-val">RODO</div>
+        <div class="hero-stat-label">zgodność</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- JAK TO DZIAŁA -->
+  <section>
+    <div class="section-header"><div class="section-bar"></div><h2>Jak to działa</h2></div>
+    <div class="flow">
+      <div class="flow-step">
+        <div class="flow-num">1</div>
+        <h3>Wgraj dokument</h3>
+        <p>JPG, PNG, PDF, WebP<br>zdjęcie telefonem wystarczy</p>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="flow-num">2</div>
+        <h3>AI rozpoznaje</h3>
+        <p>Model Surya OCR wykrywa typ dokumentu i czyta tekst</p>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="flow-num">3</div>
+        <h3>Dane strukturalne</h3>
+        <p>HGB, PESEL, lekarz, data badania, alerty medyczne</p>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="flow-num">4</div>
+        <h3>Do twojego systemu</h3>
+        <p>JSON API, webhook, CSV Excel, IKZ Mobile</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- PANEL -->
+  <section>
+    <div class="section-header"><div class="section-bar"></div><h2>Panel zarządzania</h2></div>
+    <div class="browser-frame">
+      <div class="browser-bar">
+        <div class="browser-dot" style="background:#FF5F56;"></div>
+        <div class="browser-dot" style="background:#FFBD2E;"></div>
+        <div class="browser-dot" style="background:#27C93F;"></div>
+        <div class="browser-url">panel.ikzocr.pl/scan</div>
+      </div>
+      <div class="browser-inner">
+        <div class="b-sidebar">
+          <div class="b-logo-row">
+            <div class="b-logo-ico">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M9 12h6M12 9v6M12 3C7 3 3 7 3 12s4 9 9 9 9-4 9-9-4-9-9-9z" stroke="white" stroke-width="2.2" stroke-linecap="round"/></svg>
+            </div>
+            <div><div class="b-logo-name">IKZOCR</div><div class="b-logo-sub">Platforma AI</div></div>
+          </div>
+          <div class="b-nav active"><div class="b-nav-dot" style="background:#38BDF8;"></div> Skanowanie</div>
+          <div class="b-nav"><div class="b-nav-dot"></div> Dokumenty</div>
+          <div class="b-nav"><div class="b-nav-dot"></div> Statystyki</div>
+          <div class="b-section-label">Integracje</div>
+          <div class="b-nav"><div class="b-nav-dot"></div> API / IKZ Mobile</div>
+          <div class="b-nav"><div class="b-nav-dot"></div> Placówki</div>
+          <div class="b-plan">
+            <div class="b-plan-row">
+              <span class="b-plan-name">Plan Pro</span>
+              <span class="b-plan-val">187 / 1000</span>
+            </div>
+            <div class="b-plan-bar"><div class="b-plan-fill"></div></div>
+          </div>
+        </div>
+        <div class="b-main">
+          <div class="b-header">
+            <div><div class="b-h-title">Nowe skanowanie</div><div class="b-h-sub">Wgraj dokument — AI rozpozna typ i dane</div></div>
+            <button class="b-h-btn">Uruchom OCR</button>
+          </div>
+          <div class="b-content">
+            <div class="b-queue">
+              <div class="b-dz">
+                <div class="b-dz-ico">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12" stroke="#0284C7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </div>
+                <div class="b-dz-t">Przeciągnij lub kliknij</div>
+                <div class="b-dz-s">JPG · PNG · PDF</div>
+              </div>
+              <div class="b-qitem sel">
+                <div class="b-qic" style="background:#DCFCE7;color:#15803D;">✓</div>
+                <div><div class="b-qname">morfologia.jpg</div><div class="b-qsub">Morfologia krwi</div></div>
+              </div>
+              <div class="b-qitem">
+                <div class="b-qic" style="background:#E0F2FE;">⏳</div>
+                <div><div class="b-qname">recepta.pdf</div><div class="b-qsub">Przetwarza...</div></div>
+              </div>
+              <div class="b-qitem">
+                <div class="b-qic" style="background:#F1F5F9;">📄</div>
+                <div><div class="b-qname">wynik_lab.png</div><div class="b-qsub">Oczekuje</div></div>
+              </div>
+            </div>
+            <div class="b-result">
+              <div>
+                <span class="b-badge">Morfologia krwi</span>
+                <span style="font-size:10px;color:#94A3B8;margin-left:8px;">4 312 ms</span>
+              </div>
+              <div class="b-grid2">
+                <div class="b-ic"><div class="b-ic-l">Pacjent</div><div class="b-ic-v">Jan Kowalski</div></div>
+                <div class="b-ic"><div class="b-ic-l">PESEL</div><div class="b-ic-v" style="font-family:monospace;font-size:11px;">75021***345</div></div>
+                <div class="b-ic"><div class="b-ic-l">Data badania</div><div class="b-ic-v">12.05.2026</div></div>
+                <div class="b-ic"><div class="b-ic-l">Lekarz</div><div class="b-ic-v">dr A. Nowak</div></div>
+              </div>
+              <div class="b-fields">
+                <div class="b-fh">Parametry badania</div>
+                <div class="b-frow"><span class="b-fk">HGB</span><span class="b-fv red">10.2 ↓ g/dL</span></div>
+                <div class="b-frow"><span class="b-fk">WBC</span><span class="b-fv">5.8 tys/µl</span></div>
+                <div class="b-frow"><span class="b-fk">PLT</span><span class="b-fv">245 tys/µl</span></div>
+              </div>
+              <div class="b-conf">
+                <div class="b-conf-l">Pewność modelu</div>
+                <div class="b-cbar"><span class="b-ck">Tekst</span><div class="b-ct"><div class="b-cf" style="width:97%;background:#0284C7;"></div></div><span class="b-cp">97%</span></div>
+                <div class="b-cbar"><span class="b-ck">Wartości</span><div class="b-ct"><div class="b-cf" style="width:94%;background:#38BDF8;"></div></div><span class="b-cp">94%</span></div>
+                <div class="b-cbar" style="margin-bottom:0"><span class="b-ck">Jednostki</span><div class="b-ct"><div class="b-cf" style="width:91%;background:#7DD3FC;"></div></div><span class="b-cp">91%</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TYPY DOKUMENTÓW -->
+  <section>
+    <div class="section-header"><div class="section-bar"></div><h2>Obsługiwane typy dokumentów</h2></div>
+    <div class="doctype-grid">
+      <div class="doctype-card">
+        <div class="doctype-icon">🩸</div>
+        <h3>Morfologia krwi</h3>
+        <p>HGB, WBC, RBC, PLT, HCT, MCV, MCH, MCHC</p>
+      </div>
+      <div class="doctype-card">
+        <div class="doctype-icon">🧪</div>
+        <h3>Wyniki laboratoryjne</h3>
+        <p>Glukoza, TSH, FT4, ALT, AST, kreatynina</p>
+      </div>
+      <div class="doctype-card">
+        <div class="doctype-icon">💊</div>
+        <h3>Recepty</h3>
+        <p>Leki, dawkowanie, refundacja, kod EAN</p>
+      </div>
+      <div class="doctype-card">
+        <div class="doctype-icon">📋</div>
+        <h3>Skierowania</h3>
+        <p>Specjalista, cel, priorytet, lekarz kierujący</p>
+      </div>
+      <div class="doctype-card">
+        <div class="doctype-icon">❤️</div>
+        <h3>EKG</h3>
+        <p>Rytm, oś elektryczna, opis, anomalie</p>
+      </div>
+      <div class="doctype-card">
+        <div class="doctype-icon">🔬</div>
+        <h3>RTG / USG / TK / MR</h3>
+        <p>Opis badania obrazowego, wnioski</p>
+      </div>
+      <div class="doctype-card">
+        <div class="doctype-icon">🏥</div>
+        <h3>Epikryzy</h3>
+        <p>Rozpoznanie, leczenie, zalecenia po wypisie</p>
+      </div>
+      <div class="doctype-card">
+        <div class="doctype-icon">📄</div>
+        <h3>Karty informacyjne</h3>
+        <p>Dane pacjenta, pobyt, kody ICD-10</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ALERTY MEDYCZNE -->
+  <section>
+    <div class="section-header"><div class="section-bar"></div><h2>Automatyczne alerty medyczne</h2></div>
+    <div class="alerts-box">
+      <p style="font-size:14px;color:#475569;">System automatycznie wykrywa nieprawidłowości i oznacza wyniki wymagające uwagi:</p>
+      <div class="alert-tags">
+        <span class="alert-tag">⚠ Anemia — HGB &lt; 11.5 g/dL</span>
+        <span class="alert-tag">⚠ Hiperglikemia — glukoza &gt; 126 mg/dL</span>
+        <span class="alert-tag">⚠ Hipoglikemia — glukoza &lt; 70 mg/dL</span>
+        <span class="alert-tag">⚠ Leukocytoza — WBC &gt; 11.0</span>
+        <span class="alert-tag">⚠ Niedoczynność tarczycy — TSH &gt; 4.5</span>
+        <span class="alert-tag">⚠ Nadczynność tarczycy — TSH &lt; 0.4</span>
+        <span class="alert-tag">🔴 Pilne — wykryte słowa kluczowe</span>
+      </div>
+      <p class="alerts-note">Alerty wykrywane automatycznie przy każdym skanie, widoczne w panelu i opcjonalnie wysyłane emailem lub webhookiem.</p>
+    </div>
+  </section>
+
+  <!-- INTEGRACJE -->
+  <section>
+    <div class="section-header"><div class="section-bar"></div><h2>Jak dostać dane do swojego systemu</h2></div>
+    <div class="int-grid">
+      <div class="int-card">
+        <h3>🔗 REST API (JSON)</h3>
+        <p>Gotowe endpointy REST — wyślij dokument, odbierz strukturalny JSON. Działa z każdym językiem programowania i platformą.</p>
+        <span class="code-pill">POST /v1/scan → { "HGB": 10.2, "patient": "..." }</span>
+      </div>
+      <div class="int-card">
+        <h3>📡 Webhook</h3>
+        <p>Podaj swój URL w panelu — IKZOCR automatycznie wysyła wynik OCR do twojego systemu po każdym skanie. Zero pollingu.</p>
+        <span class="code-pill">POST → https://twoj-system.pl/api/wyniki</span>
+      </div>
+      <div class="int-card">
+        <h3>📊 Eksport CSV / Excel</h3>
+        <p>Pobierz archiwum skanów jako tabelę jednym kliknięciem. Idealny dla placówek korzystających z Excela lub Arkuszy Google.</p>
+        <span class="code-pill">Pobierz wyniki.csv</span>
+      </div>
+      <div class="int-card">
+        <h3>📱 IKZ Mobile</h3>
+        <p>Natywna integracja z aplikacją IKZ — wyniki OCR trafiają automatycznie jako badania do silosu zdrowotnego pacjenta.</p>
+        <span class="code-pill">Header: X-IKZ-Silos-Id</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- CENNIK -->
+  <section>
+    <div class="section-header"><div class="section-bar"></div><h2>Plany cenowe</h2></div>
+    <div class="pricing-grid">
+      <div class="plan-card">
+        <div class="plan-label" style="background:#F1F5F9;color:#475569;">Starter</div>
+        <h3>Starter</h3>
+        <div class="plan-price">199 zł <span>/ miesiąc</span></div>
+        <div class="plan-limit">200 skanów miesięcznie<br>0,99 zł za każdy dodatkowy skan</div>
+        <div class="plan-feature"><span class="plan-check">✓</span> Panel zarządzania</div>
+        <div class="plan-feature"><span class="plan-check">✓</span> REST API + JSON</div>
+        <div class="plan-feature"><span class="plan-check">✓</span> Eksport CSV</div>
+        <div class="plan-feature"><span class="plan-check">✓</span> Alerty medyczne</div>
+        <div class="plan-feature"><span class="plan-check">✓</span> Archiwum skanów</div>
+        <div class="plan-feature"><span class="plan-cross">✗</span> <span style="color:#CBD5E1;">Webhook</span></div>
+        <div class="plan-feature"><span class="plan-cross">✗</span> <span style="color:#CBD5E1;">Integracja IKZ Mobile</span></div>
+        <a href="mailto:kontakt@ikzocr.pl?subject=Trial Starter" class="plan-btn" style="background:#F0F7FF;border:1px solid #BAE6FD;color:#0284C7;">Zacznij trial 14 dni</a>
+      </div>
+
+      <div class="plan-card featured">
+        <div class="plan-label" style="background:#E0F2FE;color:#0369A1;">⭐ Najpopularniejszy</div>
+        <h3>Pro</h3>
+        <div class="plan-price">499 zł <span>/ miesiąc</span></div>
+        <div class="plan-limit">1 000 skanów miesięcznie<br>0,79 zł za każdy dodatkowy skan</div>
+        <div class="plan-feature"><span class="plan-check">✓</span> Panel zarządzania</div>
+        <div class="plan-feature"><span class="plan-check">✓</span> REST API + JSON</div>
+        <div class="plan-feature"><span class="plan-check">✓</span> Eksport CSV</div>
+        <div class="plan-feature"><span class="plan-check">✓</span> Alerty medyczne</div>
+        <div class="plan-feature"><span class="plan-check">✓</span> Archiwum skanów</div>
+        <div class="plan-feature"><span class="plan-check">✓</span> Webhook do własnego systemu</div>
+        <div class="plan-feature"><span class="plan-check">✓</span> Integracja IKZ Mobile</div>
+        <a href="mailto:kontakt@ikzocr.pl?subject=Plan Pro" class="plan-btn" style="background:#0284C7;color:#fff;">Kup plan Pro</a>
+      </div>
+
+      <div class="plan-card">
+        <div class="plan-label" style="background:#F3E8FF;color:#7C3AED;">Enterprise</div>
+        <h3>Enterprise</h3>
+        <div class="plan-price">1 499 zł <span>/ miesiąc</span></div>
+        <div class="plan-limit">5 000 skanów miesięcznie<br>0,59 zł za każdy dodatkowy skan</div>
+        <div class="plan-feature"><span class="plan-check">✓</span> Wszystko z planu Pro</div>
+        <div class="plan-feature"><span class="plan-check">✓</span> HL7 FHIR export</div>
+        <div class="plan-feature"><span class="plan-check">✓</span> SLA 99.9% uptime</div>
+        <div class="plan-feature"><span class="plan-check">✓</span> Dedykowane wsparcie</div>
+        <div class="plan-feature"><span class="plan-check">✓</span> Umowa powierzenia RODO</div>
+        <div class="plan-feature"><span class="plan-check">✓</span> On-premise na życzenie</div>
+        <a href="mailto:kontakt@ikzocr.pl?subject=Enterprise" class="plan-btn" style="background:#F0F7FF;border:1px solid #BAE6FD;color:#0284C7;">Skontaktuj się</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- RODO -->
+  <section>
+    <div class="rodo-box">
+      <div class="rodo-icon">🔒</div>
+      <div>
+        <h3>Bezpieczeństwo i zgodność z RODO</h3>
+        <p>IKZOCR przetwarza wrażliwe dane medyczne — dlatego bezpieczeństwo jest priorytetem numer jeden. Każda placówka podpisuje umowę powierzenia przetwarzania danych osobowych.</p>
+        <div class="rodo-tags">
+          <span class="rodo-tag">Serwery w Polsce</span>
+          <span class="rodo-tag">HTTPS wszędzie</span>
+          <span class="rodo-tag">PESEL maskowany automatycznie</span>
+          <span class="rodo-tag">Dane kasowane po 30 dniach</span>
+          <span class="rodo-tag">Logi dostępu</span>
+          <span class="rodo-tag">Umowa powierzenia danych</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <div class="contact-box">
+    <h3>Gotowy żeby zacząć?</h3>
+    <p>Skontaktuj się z nami — pokażemy demo na żywo na dokumentach z twojej placówki i dobierzemy odpowiedni plan.</p>
+    <div class="contact-btns">
+      <a href="mailto:kontakt@ikzocr.pl" class="btn-primary">Napisz do nas</a>
+      <a href="https://panel.ikzocr.pl" class="btn-secondary">Wypróbuj demo</a>
+    </div>
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">
+    <div class="nav-logo-icon">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+        <path d="M9 12h6M12 9v6M12 3C7.03 3 3 7.03 3 12s4.03 9 9 9 9-4.03 9-9-4.03-9-9-9z" stroke="white" stroke-width="2.2" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div>
+      <div class="footer-brand">IKZOCR</div>
+      <div class="footer-legal">Pierwsze w Polsce AI OCR dla dokumentów medycznych</div>
+    </div>
+  </div>
+  <div class="footer-right">
+    kontakt@ikzocr.pl<br>
+    panel.ikzocr.pl
+  </div>
+</footer>
+
+</body>
+</html>
