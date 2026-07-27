@@ -23,6 +23,11 @@ Pierwsze w Polsce rozwiązanie AI do automatycznego rozpoznawania i strukturyzow
 | [docs/SECURITY_POLICY.md](docs/SECURITY_POLICY.md) | Polityka bezpieczeństwa (TLS, auth, podatności, disclosure) |
 | [docs/SLA.md](docs/SLA.md) | Umowa o poziomie usług — dostępność, czasy odpowiedzi, kompensaty |
 | [docs/INCIDENT_RESPONSE.md](docs/INCIDENT_RESPONSE.md) | Polityka obsługi incydentów i breachów danych |
+| [docs/FAQ.md](docs/FAQ.md) | Najczęściej zadawane pytania |
+| [docs/ONBOARDING.md](docs/ONBOARDING.md) | Pierwsze kroki — SaaS, On-Premise, API |
+| [docs/UPGRADE_GUIDE.md](docs/UPGRADE_GUIDE.md) | Aktualizacja systemu On-Premise |
+| [docs/INTEGRATIONS.md](docs/INTEGRATIONS.md) | Integracje z HIS/LIS, webhook, przykłady kodu |
+| [docs/IKZOCR.postman_collection.json](docs/IKZOCR.postman_collection.json) | Kolekcja Postman do testowania API |
 
 ## Komponenty
 

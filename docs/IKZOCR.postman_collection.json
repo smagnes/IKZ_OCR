@@ -1,0 +1,250 @@
+{
+  "info": {
+    "name": "IKZOCR API",
+    "description": "Kolekcja zapytań do IKZOCR REST API. \n\nPrzed użyciem ustaw zmienną `api_key` na swój klucz Bearer.\n\nDokumentacja: https://github.com/smagnes/IKZ_OCR/blob/main/docs/API.md",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "0.3.0"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000",
+      "description": "Zmień na https://api.ikzocr.pl dla produkcji"
+    },
+    {
+      "key": "api_key",
+      "value": "mk_TwójKluczAPI",
+      "description": "Klucz API z panelu IKZOCR"
+    },
+    {
+      "key": "scan_id",
+      "value": "",
+      "description": "Uzupełniany automatycznie po skanowaniu"
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{api_key}}", "type": "string" }]
+  },
+  "item": [
+    {
+      "name": "System",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/health",
+            "description": "Sprawdza czy API jest dostępne. Nie wymaga autoryzacji."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Status OK', () => pm.expect(pm.response.json().status).to.eql('ok'));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Rejestracja",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/v1/auth/register",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"test@placowka.pl\",\n  \"password\": \"BezpieczneHaslo123!\",\n  \"org_name\": \"Placówka Testowa\"\n}"
+            },
+            "description": "Rejestracja nowej organizacji. Zwraca token JWT i pierwszy klucz API."
+          }
+        },
+        {
+          "name": "Logowanie",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/v1/auth/login",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"test@placowka.pl\",\n  \"password\": \"BezpieczneHaslo123!\"\n}"
+            },
+            "description": "Logowanie. Zwraca JWT token (do panelu) i klucz API."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  const body = pm.response.json();",
+                  "  if (body.api_key) pm.collectionVariables.set('api_key', body.api_key);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Skanowanie",
+      "item": [
+        {
+          "name": "POST Skanuj dokument",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/v1/scan",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": [],
+                  "description": "Plik JPEG, PNG, TIFF lub PDF (max 20 MB)"
+                }
+              ]
+            },
+            "description": "Główny endpoint — prześlij dokument medyczny do analizy OCR.\n\nCzas odpowiedzi: 10–45 sekund.\n\nZwraca: scan_id, doc_type, confidence, parsed_data (labs, patient, alerts)."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Zawiera scan_id', () => pm.expect(pm.response.json()).to.have.property('scan_id'));",
+                  "if (pm.response.code === 200) {",
+                  "  pm.collectionVariables.set('scan_id', pm.response.json().scan_id);",
+                  "  console.log('scan_id zapisany:', pm.response.json().scan_id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dokumenty",
+      "item": [
+        {
+          "name": "GET Lista dokumentów",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/v1/documents?limit=20&offset=0",
+              "query": [
+                { "key": "limit", "value": "20", "description": "Liczba wyników (max 100)" },
+                { "key": "offset", "value": "0", "description": "Przesunięcie (paginacja)" }
+              ]
+            },
+            "description": "Lista ostatnich skanów dla bieżącego klucza API."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Tablica wyników', () => pm.expect(pm.response.json()).to.be.an('array'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET Szczegóły dokumentu",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/v1/documents/{{scan_id}}",
+            "description": "Szczegóły konkretnego skanu (pełny parsed_data + raw_text).\n\nscan_id uzupełniany automatycznie po POST /v1/scan."
+          }
+        },
+        {
+          "name": "GET Export TXT",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/v1/documents/{{scan_id}}/export.txt",
+            "description": "Pobierz wynik skanu jako plik TXT."
+          }
+        },
+        {
+          "name": "GET Export Markdown",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/v1/documents/{{scan_id}}/export.md",
+            "description": "Pobierz wynik skanu jako plik Markdown."
+          }
+        },
+        {
+          "name": "GET Export CSV (jeden skan)",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/v1/documents/{{scan_id}}/export.csv",
+            "description": "Pobierz wynik konkretnego skanu jako CSV."
+          }
+        },
+        {
+          "name": "GET Export CSV (wszystkie)",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/v1/documents/export",
+            "description": "Pobierz wszystkie skany jako jeden plik CSV."
+          }
+        },
+        {
+          "name": "GET Export Markdown (wszystkie)",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/v1/documents/export.md",
+            "description": "Pobierz wszystkie skany jako jeden plik Markdown."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Klucze API",
+      "item": [
+        {
+          "name": "GET Lista kluczy",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/v1/api-keys",
+            "description": "Lista kluczy API dla bieżącej organizacji."
+          }
+        },
+        {
+          "name": "POST Nowy klucz",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/v1/api-keys",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"klucz-testowy\",\n  \"daily_limit\": 200\n}"
+            },
+            "description": "Tworzy nowy klucz API. Zwraca raw key (widoczny tylko raz!) i id."
+          }
+        },
+        {
+          "name": "DELETE Usuń klucz",
+          "request": {
+            "method": "DELETE",
+            "url": "{{base_url}}/v1/api-keys/:key_id",
+            "description": "Dezaktywuje klucz API. Zastąp :key_id UUID klucza."
+          }
+        }
+      ]
+    }
+  ]
+}
