@@ -19,6 +19,10 @@ Pierwsze w Polsce rozwiązanie AI do automatycznego rozpoznawania i strukturyzow
 | [docs/legal/PRIVACY_POLICY.md](docs/legal/PRIVACY_POLICY.md) | Polityka prywatności |
 | [docs/legal/TERMS_OF_SERVICE.md](docs/legal/TERMS_OF_SERVICE.md) | Regulamin świadczenia usług |
 | [docs/legal/DATA_RETENTION.md](docs/legal/DATA_RETENTION.md) | Polityka retencji i usuwania danych |
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Architektura systemu — diagram i opis komponentów |
+| [docs/SECURITY_POLICY.md](docs/SECURITY_POLICY.md) | Polityka bezpieczeństwa (TLS, auth, podatności, disclosure) |
+| [docs/SLA.md](docs/SLA.md) | Umowa o poziomie usług — dostępność, czasy odpowiedzi, kompensaty |
+| [docs/INCIDENT_RESPONSE.md](docs/INCIDENT_RESPONSE.md) | Polityka obsługi incydentów i breachów danych |
 
 ## Komponenty
 
