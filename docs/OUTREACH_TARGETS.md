@@ -1,7 +1,7 @@
 # IKZOCR — Lista celów sprzedażowych
 
-> Dokument roboczy. Aktualizuj kolumny Status i Notatki na bieżąco.
-> Kontakty decyzyjne do uzupełnienia przez research LinkedIn/strona www.
+> Dokument roboczy — ostatnia aktualizacja: 2026-07-28
+> Aktualizuj kolumny **Status** i **Notatki** na bieżąco.
 
 **Statusy:** `Brak kontaktu` · `Wysłano cold mail` · `Odpowiedź` · `Demo umówione` · `Negocjacje` · `Klient` · `Odrzucone`
 
@@ -9,136 +9,141 @@
 
 ## 1. Sieci Laboratoriów Diagnostycznych
 
-| Nazwa | Zasięg | Strona | Kontakt ogólny | Kontakt decyzyjny | Status | Notatki |
-|-------|--------|--------|---------------|-------------------|--------|---------|
-| **Diagnostyka S.A.** | Ogólnopolski, 250+ punktów | diagnostyka.pl | kontakt@diagnostyka.pl | Do znalezienia: Dyrektor IT / CTO | Brak kontaktu | Największa sieć lab w Polsce — priorytet #1 |
-| **ALAB Laboratoria** | Ogólnopolski, 200+ punktów | alab.com.pl | kontakt@alab.com.pl | Do znalezienia: Dyrektor ds. Innowacji | Brak kontaktu | Silna marka, aktywni w digitalizacji |
-| **Synevo Polska** | Ogólnopolski | synevo.pl | info.pl@synevo.com | Do znalezienia: Country Manager / IT | Brak kontaktu | Część grupy Medicover |
-| **Euroimmun Polska** | Ogólnopolski | euroimmun.pl | info@euroimmun.pl | Do znalezienia: Dyrektor Techniczny | Brak kontaktu | Specjalizacja: autoimmunologia, serology |
-| **MEDLAB** | Regionalny | medlab.com.pl | medlab@medlab.com.pl | Do znalezienia | Brak kontaktu | |
-| **Invicta** | Gdańsk + oddziały | invicta.pl | sekretariat@invicta.pl | Do znalezienia: Dyrektor Operacyjny | Brak kontaktu | Reproductive + diagnostics |
-| **Central Medical Laboratory** | Warszawa | — | — | Do znalezienia | Brak kontaktu | |
+| Nazwa | Zasięg | Kontakt decyzyjny | Email | Tel | Status | Notatki |
+|-------|--------|-------------------|-------|-----|--------|---------|
+| **Diagnostyka S.A.** | Ogólnopolski, 250+ pkt | Jaromir Pelczarski — VP IT / Chief Transformation Officer | j.pelczarski@diagnostyka.pl | — | Brak kontaktu | Format email: imie.nazwisko@diagnostyka.pl. Pelczarski od 01.01.2025, wcześniej PKO BP / instytucje fin. Priorytet #1 |
+| **ALAB Laboratoria** | Ogólnopolski, 200+ pkt | Ewa Małkowska (Prezes) / Maciej Hipsz (Zarząd) | alab@alab.com.pl | — | Brak kontaktu | Adres: ul. Stępińska 22/30, Warszawa. IT Specialist: Adam Tomasiewicz (LinkedIn) |
+| **Synevo Polska** | Ogólnopolski | Krzysztof Osiak — Country Manager / Prezes Zarządu (od 04.2024) | kontakt@synevo.pl | +48 22 120 24 00 | Brak kontaktu | Maciej Marciniak — Dyrektor Zarządzania Projektami (Gdańsk). Część grupy Medicover |
+| **Euroimmun Polska** | Ogólnopolski | Do znalezienia | info@euroimmun.pl | — | Brak kontaktu | Specjalizacja: autoimmunologia, serologia |
+| **Invicta** | Gdańsk + oddziały | Do znalezienia: Dyrektor Operacyjny | sekretariat@invicta.pl | — | Brak kontaktu | Reproductive + diagnostics |
 
 ---
 
 ## 2. Sieci Klinik Prywatnych
 
-| Nazwa | Zasięg | Strona | Kontakt ogólny | Kontakt decyzyjny | Status | Notatki |
-|-------|--------|--------|---------------|-------------------|--------|---------|
-| **LUX MED** | Ogólnopolski, 200+ placówek | luxmed.pl | kontakt@luxmed.pl | Do znalezienia: Dyrektor IT / Head of Digital | Brak kontaktu | Największa sieć prywatna — duże laboratorium własne |
-| **Medicover** | Ogólnopolski | medicover.pl | medicover@medicover.pl | Do znalezienia: CTO / Dyrektor Techniczny | Brak kontaktu | Właściciel Synevo — potencjał bundlowania |
-| **Enel-Med** | Ogólnopolski, ~50 placówek | enel.pl | enel@enel.pl | Do znalezienia: Dyrektor ds. Technologii | Brak kontaktu | Notowany na GPW, aktywny w innowacjach |
-| **Centrum Medyczne CMP** | Warszawa + oddziały | cmp.com.pl | cmp@cmp.com.pl | Do znalezienia | Brak kontaktu | |
-| **Damian Medical Center** | Warszawa | szpitaldamiana.pl | recepcja@szpitaldamiana.pl | Do znalezienia: Dyrektor Medyczny | Brak kontaktu | Szpital prywatny z własnym laboratorium |
-| **Carolina Medical Center** | Warszawa | carolina.pl | info@carolina.pl | Do znalezienia | Brak kontaktu | Ortopedia + diagnostyka |
-| **Scanmed** | Ogólnopolski | scanmed.pl | kontakt@scanmed.pl | Do znalezienia: Dyrektor IT | Brak kontaktu | Sieć szpitali prywatnych |
-| **Nowy Szpital (Grupa)** | Ogólnopolski | nowyszpital.pl | kontakt@nowyszpital.pl | Do znalezienia | Brak kontaktu | 10+ szpitali powiatowych przejętych |
-| **Szpital na Klinach** | Kraków | szpitalnaklinach.pl | sekretariat@szpitalnaklinach.pl | Do znalezienia | Brak kontaktu | |
-| **Centrum Medyczne Mavit** | Warszawa | mavit.pl | mavit@mavit.pl | Do znalezienia | Brak kontaktu | |
-| **Klinika Budzik** | Warszawa | klinika-budzik.pl | info@klinika-budzik.pl | Do znalezienia | Brak kontaktu | Rehabilitacja neurologiczna |
+| Nazwa | Zasięg | Kontakt decyzyjny | Email | Tel | Status | Notatki |
+|-------|--------|-------------------|-------|-----|--------|---------|
+| **LUX MED** | Ogólnopolski, 200+ | Michał Plit — Dyrektor Działu Strategii i Innowacji | LinkedIn: "Michał Plit LUX MED" | — | Brak kontaktu | Aktywny w innowacjach medycznych, bierze udział w ESG/startup events. Szukaj też przez @luxmedpl na X |
+| **Medicover** | Ogólnopolski | Łukasz Krause — Group CDIO (Chief Digital Information Officer, od 07.2025) | biuro@medicover.pl | — | Brak kontaktu | Prezes PL od 2026: dr Artur Białkowski. Adres: al. Jerozolimskie 96, Warszawa. Właściciel Synevo |
+| **Enel-Med** | Ogólnopolski, ~50 | Marcin Suchar — tymczasowy CIO | LinkedIn: linkedin.com/in/suchar/ (email: m.suchar@enel.pl — do weryfikacji) | — | Brak kontaktu | Notowany GPW. Prezes: Jacek Jakub Rozwadowski. Suchar wcześniej: ERGO Tech, PZU, Orange |
+| **Centrum Medyczne CMP** | Warszawa + | Do znalezienia | cmp@cmp.com.pl | — | Brak kontaktu | |
+| **Damian Medical Center** | Warszawa | Do znalezienia: Dyrektor Medyczny | recepcja@szpitaldamiana.pl | — | Brak kontaktu | Szpital prywatny z własnym laboratorium |
+| **Scanmed** | Ogólnopolski | Do znalezienia: Dyrektor IT | kontakt@scanmed.pl | — | Brak kontaktu | Sieć szpitali prywatnych |
+| **Nowy Szpital (Grupa)** | Ogólnopolski | Do znalezienia | kontakt@nowyszpital.pl | — | Brak kontaktu | 10+ szpitali powiatowych |
 
 ---
 
 ## 3. Szpitale Publiczne / UCK / Instytuty
 
-| Nazwa | Miasto | Strona | Kontakt ogólny | Kontakt decyzyjny | Status | Notatki |
-|-------|--------|--------|---------------|-------------------|--------|---------|
-| **UCK Gdańsk** (Uniwersyteckie Centrum Kliniczne) | Gdańsk | uck.pl | sekretariat@uck.gda.pl | Do znalezienia: Dyrektor ds. IT / Informatyk | Brak kontaktu | Jeden z największych szpitali klinicznych — długi proces zakupowy |
-| **SPSK nr 1 Gdańsk** | Gdańsk | spsk1.gdansk.pl | sekretariat@spsk1.gdansk.pl | Do znalezienia | Brak kontaktu | Powiązany z GUMed |
-| **UCK Wrocław** | Wrocław | usk.wroc.pl | sekretariat@usk.wroc.pl | Do znalezienia | Brak kontaktu | |
-| **Szpital Kliniczny im. Heliodora Święcickiego** | Poznań | spsk2.pl | sekretariat@spsk2.pl | Do znalezienia | Brak kontaktu | |
-| **Instytut Onkologii — Warszawa** | Warszawa | coi.pl | sekretariat@coi.pl | Do znalezienia: Dyrektor ds. Informatyzacji | Brak kontaktu | Relevantny dla modułu AI (onkologia) |
-| **Instytut Onkologii — Gliwice** | Gliwice | io.gliwice.pl | sekretariat@io.gliwice.pl | Do znalezienia | Brak kontaktu | |
-| **Centrum Onkologii Kraków** | Kraków | onkologia.krakow.pl | — | Do znalezienia | Brak kontaktu | |
-| **WIM (Wojskowy Instytut Medyczny)** | Warszawa | wim.mil.pl | sekretariat@wim.mil.pl | Do znalezienia | Brak kontaktu | Zamówienia publiczne — przetargi |
-| **Szpital Powiatowy Iława** | Iława | szpital.ilawa.pl | sekretariat@szpital.ilawa.pl | Do znalezienia | Brak kontaktu | Testowaliśmy OCR na ich dokumentach — naturalny pierwszy klient |
+| Nazwa | Miasto | Kontakt decyzyjny | Email | Tel | Status | Notatki |
+|-------|--------|-------------------|-------|-----|--------|---------|
+| **Szpital Powiatowy im. Wł. Biegańskiego Iława** | Iława | Dr Ewa Pietryka — Dyrektor | kancelaria@szpital.ilawa.pl | 89 644 96 01 (sekretariat) | Brak kontaktu | **Najcieplejszy lead** — testowaliśmy OCR na ich dokumentach. Adres: Gen. Andersa 3, 14-200 Iława |
+| **UCK Gdańsk** | Gdańsk | Do znalezienia: Dyrektor ds. IT / Informatyk | sekretariat@uck.gda.pl | — | Brak kontaktu | Długi proces zakupowy (publiczny) |
+| **Instytut Onkologii — Warszawa** | Warszawa | Do znalezienia: Dyrektor ds. Informatyzacji | sekretariat@coi.pl | — | Brak kontaktu | Relevantny dla modułu AI medge4cadi |
+| **Instytut Onkologii — Gliwice** | Gliwice | Do znalezienia | sekretariat@io.gliwice.pl | — | Brak kontaktu | |
+| **WIM (Wojskowy Instytut Medyczny)** | Warszawa | Do znalezienia | sekretariat@wim.mil.pl | — | Brak kontaktu | Zamówienia publiczne — przetargi |
 
 ---
 
 ## 4. Medycyna Pracy / HR
 
-| Nazwa | Zasięg | Strona | Kontakt ogólny | Kontakt decyzyjny | Status | Notatki |
-|-------|--------|--------|---------------|-------------------|--------|---------|
-| **Impel Medica** | Ogólnopolski | impelmedica.pl | biuro@impelmedica.pl | Do znalezienia | Brak kontaktu | Sieć med. pracy — relevantna dla WorkDoc |
-| **Polmed** | Trójmiasto + oddziały | polmed.pl | sekretariat@polmed.pl | Do znalezienia | Brak kontaktu | |
-| **Inter-Medic** | Ogólnopolski | inter-medic.com | biuro@inter-medic.com | Do znalezienia | Brak kontaktu | |
-| **Medisept** | Ogólnopolski | medisept.pl | — | Do znalezienia | Brak kontaktu | |
-| **Centrum Medyczne Żelazna** | Warszawa | zelazna.pl | sekretariat@zelazna.pl | Do znalezienia | Brak kontaktu | |
+| Nazwa | Zasięg | Kontakt decyzyjny | Email | Tel | Status | Notatki |
+|-------|--------|-------------------|-------|-----|--------|---------|
+| **Impel Medica** | Ogólnopolski | Do znalezienia | biuro@impelmedica.pl | — | Brak kontaktu | Relevantna dla WorkDoc |
+| **Polmed** | Trójmiasto + | Do znalezienia | sekretariat@polmed.pl | — | Brak kontaktu | |
+| **Inter-Medic** | Ogólnopolski | Do znalezienia | biuro@inter-medic.com | — | Brak kontaktu | |
 
 ---
 
 ## 5. Partnerzy Technologiczni (Integratorzy HIS/LIS)
 
-> Potencjał: biały label / integracja jako moduł OCR w ich systemie.
+> Cel: integracja IKZOCR jako moduł OCR w ich systemach — biały label lub API.
 
-| Nazwa | Produkt | Strona | Kontakt ogólny | Kontakt decyzyjny | Status | Notatki |
-|-------|---------|--------|---------------|-------------------|--------|---------|
-| **Kamsoft S.A.** | KS-MEDIS, KS-SWD | kamsoft.pl | info@kamsoft.pl | Do znalezienia: Dyrektor Produktu | Brak kontaktu | **Priorytet** — wspomniany przez klienta jako system w użyciu |
-| **Asseco Medical Systems** | AMMS, Optimed | asseco.com/medical | biuro@asseco.pl | Do znalezienia: BD Manager | Brak kontaktu | Największy integrator w szpitalach publicznych |
-| **Comarch Healthcare** | Comarch HIS | comarch.pl | comarch@comarch.pl | Do znalezienia: Healthcare BD | Brak kontaktu | |
-| **Gabos Software** | Gabos HIS | gabos.pl | gabos@gabos.pl | Do znalezienia | Brak kontaktu | Mniejszy, bardziej elastyczny |
-| **Simple S.A.** | Simple.ERP Medical | simple.com.pl | info@simple.com.pl | Do znalezienia | Brak kontaktu | |
-| **Progmedica** | LIS systems | progmedica.pl | info@progmedica.pl | Do znalezienia | Brak kontaktu | Specjalizacja: laboratoryjne systemy informacyjne |
+| Nazwa | Produkt | Kontakt decyzyjny | Email | Tel | Status | Notatki |
+|-------|---------|-------------------|-------|-----|--------|---------|
+| **Kamsoft S.A.** | KS-MEDIS, KS-SWD | Grzegorz Mródź — Prezes Zarządu / Rafał Kozioł — Wiceprezes | biuro@kamsoft.pl | 32 209 07 05 | Brak kontaktu | **Priorytet #1 partner** — wspomniany przez klienta z Rzeszowa. Oddział Gdynia: serum@kamsoft.pl, tel. 58 627 23 30. Katowice: ul. 1 Maja 133 |
+| **Asseco Medical Systems** | AMMS, Optimed | Szukaj: BD Manager / Dyrektor Sprzedaży Medycznej na LinkedIn | mmedica@mmedica.asseco.pl | — | Brak kontaktu | Strona mmedica.asseco.pl — contact form. Największy integrator szpitali publicznych |
+| **Comarch Healthcare** | Comarch HIS | Do znalezienia: Healthcare BD | comarch@comarch.pl | — | Brak kontaktu | |
+| **Gabos Software** | Gabos HIS | Do znalezienia | gabos@gabos.pl | — | Brak kontaktu | Mniejszy, bardziej elastyczny |
+| **Progmedica** | LIS systems | Do znalezienia | info@progmedica.pl | — | Brak kontaktu | Specjalizacja: laboratoryjne systemy inf. |
 
 ---
 
 ## 6. Telemedycyna / Healthtech
 
-| Nazwa | Profil | Strona | Kontakt | Status | Notatki |
-|-------|--------|--------|---------|--------|---------|
-| **Infermedica** | AI diagnostic support | infermedica.com | hello@infermedica.com | Brak kontaktu | Polski AI healthtech — potencjalny partner, nie konkurent |
-| **Telemedico** | Teleporady | telemedico.eu | kontakt@telemedico.eu | Brak kontaktu | |
-| **DocPlanner (ZnanyLekarz)** | Platforma wizyt | docplanner.com | — | Brak kontaktu | Duży zasięg — integracja jako feature |
-| **Promedicus (AU)** | Radiology AI | promedicus.com | — | Brak kontaktu | Benchmark/inspiracja, nie direct target |
+| Nazwa | Profil | Kontakt | Status | Notatki |
+|-------|--------|---------|--------|---------|
+| **Infermedica** | AI diagnostic support | hello@infermedica.com | Brak kontaktu | Polski AI healthtech — potencjalny partner, nie konkurent |
+| **Telemedico** | Teleporady | kontakt@telemedico.eu | Brak kontaktu | |
+| **DocPlanner (ZnanyLekarz)** | Platforma wizyt | Przez stronę | Brak kontaktu | Duży zasięg — integracja jako feature |
 
 ---
 
-## 7. Centra Badań / Instytucje Naukowe
+## 7. Centra Badań / Instytucje Publiczne
 
-> Relevantne dla modułu AI medge4cadi i projektów B+R.
-
-| Nazwa | Miasto | Strona | Kontakt | Status | Notatki |
-|-------|--------|--------|---------|--------|---------|
-| **Podkarpackie Centrum Innowacji** | Rzeszów | pci.org.pl | pci@pci.org.pl | Brak kontaktu | Już współpracujemy — raport OCR |
-| **Centrum e-Zdrowia** | Warszawa | cez.gov.pl | kontakt@cez.gov.pl | Brak kontaktu | Rządowa jednostka ds. cyfryzacji zdrowia — przetargi |
-| **NCBR** | Warszawa | ncbr.gov.pl | ncbr@ncbr.gov.pl | Brak kontaktu | Finansowanie B+R — relevantne dla AI modułu |
-| **Narodowy Instytut Onkologii** | Warszawa | pib-nio.pl | sekretariat@pib-nio.pl | Brak kontaktu | Dane do trenowania modeli AI |
-| **GUMed** (Gdański Univ. Med.) | Gdańsk | gumed.edu.pl | rektorat@gumed.edu.pl | Brak kontaktu | Blisko Trójmiasta — badania kliniczne |
+| Nazwa | Miasto | Kontakt decyzyjny | Email | Tel | Status | Notatki |
+|-------|--------|-------------------|-------|-----|--------|---------|
+| **Centrum e-Zdrowia** | Warszawa | Jarosław Sot — Dyrektor (od 04.2026) | biuro@cez.gov.pl | +48 22 597-09-27 | Brak kontaktu | Adres: ul. Stanisława Dubois 5A, 00-184 Warszawa. Rządowa digitalizacja zdrowia — przetargi |
+| **Podkarpackie Centrum Innowacji** | Rzeszów | — (już współpracujemy) | pci@pci.org.pl | — | Klient | Podpisali raport OCR |
+| **NCBR** | Warszawa | Do znalezienia | ncbr@ncbr.gov.pl | — | Brak kontaktu | Finansowanie B+R — dla modułu AI |
+| **Narodowy Instytut Onkologii** | Warszawa | Do znalezienia: Dyrektor ds. Informatyzacji | sekretariat@pib-nio.pl | — | Brak kontaktu | Dane do trenowania modeli AI (onkologia) |
+| **GUMed** | Gdańsk | Do znalezienia: Prorektorat ds. Nauki | rektorat@gumed.edu.pl | — | Brak kontaktu | Blisko Trójmiasta — badania kliniczne |
 
 ---
 
-## Priorytety — gdzie zacząć
+## Priorytety — kolejność działania
 
-| Priorytet | Dlaczego |
-|-----------|----------|
-| 🔴 **Szpital Powiatowy Iława** | Testowaliśmy na ich dokumentach — mamy dowód działania dla nich |
-| 🔴 **Kamsoft S.A.** | Klient wprost wspomniał Kamsoft — integracja = dostęp do setek szpitali |
-| 🔴 **Diagnostyka S.A.** | Największa sieć lab, jeśli wejdziemy to skala od razu |
-| 🟡 **ALAB Laboratoria** | Duże, aktywni w digitalizacji, łatwiejszy kontakt niż Diagnostyka |
-| 🟡 **LUX MED** | Własne laboratorium, własny IT — decyzja wewnętrzna, szybsza |
-| 🟡 **Enel-Med** | Notowany na GPW, presja na innowacje i efektywność |
-| 🟢 **Podkarpackie Centrum Innowacji** | Już znamy — rozszerzenie współpracy |
-| 🟢 **Medicover / Synevo** | Duże, ale długi proces decyzyjny |
+| # | Cel | Powód | Kontakt |
+|---|-----|-------|---------|
+| 1 | **Szpital Powiatowy Iława** | Mamy dowód działania na ich dokumentach | Dr Ewa Pietryka — kancelaria@szpital.ilawa.pl |
+| 2 | **Kamsoft S.A.** | Klient z Rzeszowa ich wymienił — ciepły lead przez polecenie | biuro@kamsoft.pl — Grzegorz Mródź (Prezes) |
+| 3 | **Diagnostyka S.A.** | Największa sieć lab w Polsce, VP IT nowy (świeży na stanowisku = otwarty na zmiany) | j.pelczarski@diagnostyka.pl — Jaromir Pelczarski |
+| 4 | **Enel-Med** | Notowany GPW, CIO nowy/tymczasowy, presja innowacji | linkedin.com/in/suchar/ — Marcin Suchar |
+| 5 | **LUX MED** | Dyrektor Innowacji aktywny publicznie (konferencje, X) | Michał Plit przez LinkedIn |
+| 6 | **ALAB Laboratoria** | Duże, ogólnopolskie, brak wyraźnego lock-in | alab@alab.com.pl |
+| 7 | **Centrum e-Zdrowia** | Przetargi publiczne, nowy dyrektor od 04.2026 | biuro@cez.gov.pl — Jarosław Sot |
+| 8 | **Asseco Medical Systems** | Integracja = dostęp do setek szpitali naraz | Przez mmedica.asseco.pl |
 
 ---
 
-## Szablon cold maila (do uzupełnienia nazwiskiem)
+## Szablon cold maila
 
 ```
-Temat: Automatyzacja wyników laboratoryjnych w [NAZWA PLACÓWKI] — demo 15 min?
+Temat: Automatyzacja wyników laboratoryjnych w [NAZWA] — demo 15 min?
 
 Dzień dobry [IMIĘ],
 
-Widzę że [NAZWA PLACÓWKI] [przetwarza/obsługuje] dużą liczbę wyników badań laboratoryjnych.
+Widzę że [NAZWA] przetwarza dużą liczbę wyników laboratoryjnych i dokumentacji medycznej.
 
-Zbudowaliśmy IKZOCR — system OCR który automatycznie odczytuje i strukturyzuje wyniki 
-morfologii, badań biochemicznych i dokumentacji medycznej. Dane zostają w Waszej 
-infrastrukturze (instalacja On-Premise), bez wysyłania do chmury.
+Zbudowaliśmy IKZOCR — system który automatycznie odczytuje i strukturyzuje wyniki 
+morfologii, badań biochemicznych i dokumentację szpitalną. Dane mogą zostawać 
+w Waszej infrastrukturze (On-Premise), bez wysyłania do chmury.
 
-Konkretnie: wynik morfologii z 14 parametrami — skan zajmuje 15–30 sekund, dane 
-wychodzą jako JSON/CSV gotowy do importu do Waszego systemu [lub: Kamsoft/Asseco/...].
+Konkretnie: morfologia z 14 parametrami → skan 15–30 sekund → JSON/CSV gotowy 
+do importu do systemu HIS/LIS.
 
-Czy ma Pan/Pani 15 minut w tym tygodniu na demo przez Teams?
+Czy znajdzie Pan/Pani 15 minut na demo przez Teams w tym tygodniu?
+
+Pozdrawiam,
+Sebastian Magnes
+SZOP sp. z o.o.
+kontakt@ikzocr.pl
+```
+
+### Wariant dla partnerów technologicznych (Kamsoft, Asseco)
+
+```
+Temat: Moduł OCR dla [KS-MEDIS / AMMS] — integracja API?
+
+Dzień dobry [IMIĘ],
+
+[Kamsoft / Asseco] obsługuje setki placówek medycznych, które codziennie ręcznie 
+przepisują wyniki z papierowych dokumentów do systemu.
+
+Mamy gotowy moduł OCR który to automatyzuje — zwraca strukturyzowane dane (JSON/CSV) 
+w 15–30 sekund. Integracja przez REST API, działa On-Premise.
+
+Czy jest szansa na krótką rozmowę o możliwości integracji z [KS-MEDIS / AMMS]?
 
 Pozdrawiam,
 Sebastian Magnes
