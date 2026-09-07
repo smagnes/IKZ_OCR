@@ -18,7 +18,7 @@ function jwtHeaders(extra: Record<string, string> = {}) {
 export async function login(email: string, password: string): Promise<{ token: string; user: AuthUser }> {
   const res = await fetch(`${BASE}/auth/login`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', 'x-api-key': DEMO_KEY },
     body: JSON.stringify({ email, password }),
   })
   if (!res.ok) {

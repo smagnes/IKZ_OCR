@@ -84,7 +84,7 @@ export default function TranslatePage() {
               <path d="M3 5h12M9 3v2m4.5 12l-1.5-3-1.5 3m-1 0h4M5 5l6 6.5M11 5l-6 6.5"
                 stroke="#00B37E" strokeWidth="2" strokeLinecap="round"/>
             </svg>
-            Powered by Claude
+            Powered by IKZ
           </span>
           {file && status !== 'processing' && (
             <button onClick={run}
@@ -248,28 +248,53 @@ function TranslateResult({
       {activeTab === 'side' && (
         <div className="grid grid-cols-2 gap-4">
           {/* Original */}
-          <div className="bg-white border border-blue-50 rounded-2xl overflow-hidden">
-            <div className="px-4 py-2.5 border-b border-blue-50 flex items-center justify-between"
-                 style={{ background: '#FFF7ED' }}>
+          <div className="bg-white border border-blue-50 rounded-2xl overflow-hidden flex flex-col">
+            <div className="px-4 py-2.5 border-b border-amber-100 flex items-center gap-2"
+                 style={{ background: '#FFFBF5' }}>
+              <div className="w-2 h-2 rounded-full bg-amber-400" />
               <p className="text-[10px] font-semibold uppercase tracking-widest text-amber-600">
                 Original · {result.source_language}
               </p>
             </div>
-            <pre className="p-4 text-xs text-slate-600 whitespace-pre-wrap leading-relaxed font-sans overflow-auto max-h-96">
-              {result.original_text}
-            </pre>
+            <div className="p-4 overflow-auto max-h-[520px]">
+              {result.original_text
+                ? result.original_text.split('\n').map((line, i) => (
+                    <p key={i} className={`text-xs leading-relaxed ${line.trim() === '' ? 'h-3' : 'text-slate-600'}`}>
+                      {line || ' '}
+                    </p>
+                  ))
+                : <p className="text-xs text-slate-400 italic">No original text extracted</p>
+              }
+            </div>
           </div>
           {/* Translated */}
-          <div className="bg-white border border-blue-50 rounded-2xl overflow-hidden">
-            <div className="px-4 py-2.5 border-b border-blue-50 flex items-center justify-between"
-                 style={{ background: '#F0FFF4' }}>
+          <div className="bg-white border border-blue-50 rounded-2xl overflow-hidden flex flex-col">
+            <div className="px-4 py-2.5 border-b border-emerald-100 flex items-center gap-2"
+                 style={{ background: '#F5FFFA' }}>
+              <div className="w-2 h-2 rounded-full bg-emerald-400" />
               <p className="text-[10px] font-semibold uppercase tracking-widest text-emerald-600">
                 English Translation
               </p>
             </div>
-            <pre className="p-4 text-xs text-slate-700 whitespace-pre-wrap leading-relaxed font-sans overflow-auto max-h-96">
-              {result.translated_text}
-            </pre>
+            <div className="p-4 overflow-auto max-h-[520px]">
+              {result.translated_text
+                ? result.translated_text.split('\n').map((line, i) => {
+                    const isHeader = line.trim().toUpperCase() === line.trim() && line.trim().length > 3 && !line.includes(':')
+                    const isLabel = line.includes(':') && line.indexOf(':') < 30
+                    return (
+                      <p key={i} className={`leading-relaxed ${
+                        line.trim() === '' ? 'h-3' :
+                        isHeader ? 'text-xs font-bold text-slate-800 mt-3 mb-1 uppercase tracking-wide' :
+                        isLabel ? 'text-xs text-slate-700' :
+                        'text-xs text-slate-600'
+                      }`}>
+                        {line || ' '}
+                      </p>
+                    )
+                  })
+                : <p className="text-xs text-slate-400 italic">No translation available</p>
+              }
+            </div>
           </div>
         </div>
       )}

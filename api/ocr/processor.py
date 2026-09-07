@@ -1,26 +1,17 @@
 import io
 import logging
+import base64
+import os
 from PIL import Image
 import pypdf
 
 logger = logging.getLogger(__name__)
 
-_det_predictor = None
 _rec_predictor = None
 
 
 def load_models():
-    global _det_predictor, _rec_predictor
-    logger.info("Ładowanie modeli Surya OCR 0.13...")
-    from surya.models import DetectionPredictor, RecognitionPredictor
-    _det_predictor = DetectionPredictor()
-    _rec_predictor = RecognitionPredictor()
-    logger.info("Modele OCR załadowane.")
-
-
-def _ensure_models():
-    if _det_predictor is None:
-        load_models()
+    logger.info("Claude vision OCR - no models to load")
 
 
 def _pdf_to_images(data: bytes) -> list[Image.Image]:
@@ -39,18 +30,14 @@ def _load_image(data: bytes, content_type: str) -> list[Image.Image]:
 
 
 def _try_pdftotext(data: bytes) -> str | None:
-    """Fast-path for digital PDFs: pdftotext is faster and more accurate than Surya OCR.
-    Returns None if not available or file is scanned (text < 200 chars)."""
     import subprocess
     try:
         result = subprocess.run(
-            ['pdftotext', '-layout', '-', '-'],
-            input=data,
-            capture_output=True,
-            timeout=15,
+            ["pdftotext", "-layout", "-", "-"],
+            input=data, capture_output=True, timeout=15,
         )
         if result.returncode == 0:
-            text = result.stdout.decode('utf-8', errors='replace').strip()
+            text = result.stdout.decode("utf-8", errors="replace").strip()
             if len(text) >= 200:
                 return text
     except Exception:
@@ -58,81 +45,64 @@ def _try_pdftotext(data: bytes) -> str | None:
     return None
 
 
-def _reconstruct_layout(text_lines, img_w: int, img_h: int) -> str:
-    """Sort Surya text_lines by bounding-box position to produce reading-order text.
+def _image_to_base64(image: Image.Image) -> str:
+    buf = io.BytesIO()
+    image.save(buf, format="JPEG", quality=92)
+    return base64.b64encode(buf.getvalue()).decode()
 
-    Surya reads each detected text region independently and returns them in an order
-    that reflects its internal detection logic — often column-by-column (rightmost first)
-    rather than row-by-row. This function restores the correct visual reading order:
-    top→bottom, left→right within each row.
-    """
-    lines = [ln for ln in text_lines if ln.text.strip()]
-    if not lines:
-        return ""
 
-    # 1 % of image height as the row-grouping tolerance
-    row_tol = max(8, img_h * 0.010)
-    # Scale factor: how many image-pixels per output space character
-    px_per_sp = max(1.0, img_w / 110.0)
+def _claude_ocr_images(images: list[Image.Image]) -> str:
+    import anthropic
+    client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
+    content = []
+    for img in images[:4]:
+        content.append({
+            "type": "image",
+            "source": {"type": "base64", "media_type": "image/jpeg", "data": _image_to_base64(img)}
+        })
+    content.append({
+        "type": "text",
+        "text": "Extract ALL text from this medical document exactly as it appears. Preserve ALL line breaks, spacing, and column alignment. Each line in the document must be a separate line in output. Return only the raw extracted text, nothing else."
+    })
+    response = client.messages.create(
+        model="claude-haiku-4-5-20251001",
+        max_tokens=4000,
+        messages=[{"role": "user", "content": content}]
+    )
+    return response.content[0].text
 
-    # Sort by top-Y of bounding box, breaking ties by left-X
-    sorted_lines = sorted(lines, key=lambda ln: (ln.bbox[1], ln.bbox[0]))
 
-    # Group into visual rows
-    rows: list[list] = []
-    cur_row = [sorted_lines[0]]
-    cur_y = sorted_lines[0].bbox[1]
-
-    for ln in sorted_lines[1:]:
-        if ln.bbox[1] - cur_y <= row_tol:
-            cur_row.append(ln)
-        else:
-            rows.append(cur_row)
-            cur_row = [ln]
-            cur_y = ln.bbox[1]
-    if cur_row:
-        rows.append(cur_row)
-
-    # Within each row: sort L→R, insert spaces proportional to visual gap
-    out: list[str] = []
-    for row in rows:
-        row = sorted(row, key=lambda ln: ln.bbox[0])
-        parts: list[str] = []
-        prev_x2: float = 0.0
-        for ln in row:
-            x1, _, x2, _ = ln.bbox
-            if parts:
-                gap = max(1, round((x1 - prev_x2) / px_per_sp))
-                parts.append(' ' * gap)
-            parts.append(ln.text)
-            prev_x2 = x2
-        out.append(''.join(parts))
-
-    return '\n'.join(out)
+def _claude_ocr_pdf(data: bytes) -> str:
+    import anthropic
+    client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
+    b64 = base64.b64encode(data).decode()
+    response = client.beta.messages.create(
+        model="claude-haiku-4-5-20251001",
+        max_tokens=4000,
+        betas=["pdfs-2024-09-25"],
+        messages=[{"role": "user", "content": [
+            {"type": "document", "source": {"type": "base64", "media_type": "application/pdf", "data": b64}},
+            {"type": "text", "text": "Extract ALL text from this medical document exactly as it appears. Preserve ALL line breaks, spacing, and column alignment. Each line in the document must be a separate line in output. Return only the raw extracted text, nothing else."}
+        ]}]
+    )
+    return response.content[0].text
 
 
 def run_ocr_on_bytes(data: bytes, content_type: str) -> str:
-    # Digital PDFs: use pdftotext (faster, no column scrambling)
-    if 'pdf' in content_type:
+    if "pdf" in content_type:
         text = _try_pdftotext(data)
         if text:
             return text
+        try:
+            result = _claude_ocr_pdf(data)
+            if result and len(result.strip()) > 100:
+                return result
+        except Exception as e:
+            logger.warning("Claude PDF beta failed: %s", e)
+        logger.info("Scanned PDF detected, using image OCR fallback")
+        images = _pdf_to_images(data)
+        return _claude_ocr_images(images)
+    else:
+        images = _load_image(data, content_type)
+        return _claude_ocr_images(images)
 
-    _ensure_models()
-
-    images = _load_image(data, content_type)
-    all_text = []
-
-    for image in images[:4]:
-        results = _rec_predictor(
-            images=[image],
-            langs=[["pl", "en"]],
-            det_predictor=_det_predictor,
-        )
-        if results and results[0].text_lines:
-            text = _reconstruct_layout(
-                results[0].text_lines, image.width, image.height
-            )
-            all_text.append(text)
-
-    return "\n\n".join(all_text)

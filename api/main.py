@@ -1,6 +1,7 @@
 import time
 import uuid
 import logging
+import os
 from contextlib import asynccontextmanager
 from datetime import datetime, timedelta, timezone
 from typing import Optional
@@ -633,3 +634,104 @@ async def list_api_keys(key_record: dict = Depends(verify_api_key)):
         }
         for k in keys
     ]}
+
+# ── TRANSLATE ENDPOINT ────────────────────────────────────────────────────────
+
+import anthropic as _anthropic
+import base64 as _b64
+import json as _json
+
+class TranslateResponse(BaseModel):
+    original_text: str
+    translated_text: str
+    document_type: str
+    key_findings: list
+    clinical_notes: str
+    source_language: str
+    processing_time_ms: int
+
+@app.post("/translate", summary="Translate medical document to English")
+async def translate_document(
+    file: UploadFile = File(...),
+    current_user: dict = Depends(verify_jwt_user),
+):
+    if file.content_type not in ALLOWED_TYPES:
+        raise HTTPException(status_code=415, detail=f"Unsupported format: {file.content_type}")
+
+    data = await file.read()
+    if len(data) > MAX_SIZE_MB * 1024 * 1024:
+        raise HTTPException(status_code=413, detail=f"File too large (max {MAX_SIZE_MB} MB)")
+
+    t_start = time.perf_counter()
+
+    # Step 1: OCR
+    try:
+        raw_text = run_ocr_on_bytes(data, file.content_type)
+    except Exception as exc:
+        logger.error("OCR error in translate: %s", exc, exc_info=True)
+        raise HTTPException(status_code=500, detail="OCR processing error")
+
+    if not raw_text or len(raw_text.strip()) < 10:
+        raise HTTPException(status_code=422, detail="Could not extract text from document")
+
+    # Step 2: Claude — translate + structure
+    api_key = os.environ.get("ANTHROPIC_API_KEY", "")
+    if not api_key:
+        raise HTTPException(status_code=503, detail="Translation service not configured")
+
+    client = _anthropic.Anthropic(api_key=api_key)
+
+    system_prompt = (
+        "You are a medical document translator and analyzer. "
+        "Given raw OCR text from a medical document, you will:\n"
+        "1. Detect the source language\n"
+        "2. Translate the full text to English, preserving medical terminology\n"
+        "3. Identify the document type\n"
+        "4. Extract key medical findings/values as structured data\n"
+        "5. Write a brief clinical summary in English\n\n"
+        "Respond ONLY with valid JSON in this exact schema:\n"
+        "{\n"
+        '  "source_language": "string (e.g. Polish, German, French)",\n'
+        '  "document_type": "string (e.g. Blood Test, Discharge Summary, Prescription)",\n'
+        '  "translated_text": "full English translation of the document",\n'
+        '  "key_findings": [\n'
+        '    {"label": "parameter name", "value": "value with unit", "flag": "normal|high|low"}\n'
+        "  ],\n"
+        '  "clinical_notes": "2-3 sentence clinical summary in English"\n'
+        "}"
+    )
+
+    try:
+        message = client.messages.create(
+            model="claude-opus-4-5",
+            max_tokens=2048,
+            system=system_prompt,
+            messages=[{
+                "role": "user",
+                "content": f"Medical document OCR text:\n\n{raw_text[:8000]}"
+            }]
+        )
+        raw_response = message.content[0].text.strip()
+        # Strip markdown code fences if present
+        if raw_response.startswith("```"):
+            raw_response = "\n".join(raw_response.split("\n")[1:])
+            raw_response = raw_response.rsplit("```", 1)[0].strip()
+        parsed = _json.loads(raw_response)
+    except _json.JSONDecodeError:
+        raise HTTPException(status_code=500, detail="Translation response parse error")
+    except Exception as exc:
+        logger.error("Claude translate error: %s", exc, exc_info=True)
+        raise HTTPException(status_code=500, detail="AI translation error")
+
+    elapsed_ms = int((time.perf_counter() - t_start) * 1000)
+    logger.info("Translate | lang=%s | type=%s | time=%dms", parsed.get("source_language"), parsed.get("document_type"), elapsed_ms)
+
+    return {
+        "original_text": raw_text,
+        "translated_text": parsed.get("translated_text", ""),
+        "document_type": parsed.get("document_type", "Medical Document"),
+        "key_findings": parsed.get("key_findings", []),
+        "clinical_notes": parsed.get("clinical_notes", ""),
+        "source_language": parsed.get("source_language", "Unknown"),
+        "processing_time_ms": elapsed_ms,
+    }

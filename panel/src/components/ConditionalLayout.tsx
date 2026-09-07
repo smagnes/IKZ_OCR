@@ -40,7 +40,7 @@ export default function ConditionalLayout({ children }: { children: React.ReactN
   return (
     <div className="flex h-screen overflow-hidden" style={{ background: '#F5F8F6' }}>
       <Sidebar />
-      <main className="flex-1 overflow-hidden flex flex-col">
+      <main className="flex-1 overflow-hidden flex flex-col pt-12 md:pt-0">
         {children}
       </main>
     </div>

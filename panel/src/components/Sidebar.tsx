@@ -22,6 +22,7 @@ export default function Sidebar() {
   const path = usePathname()
   const router = useRouter()
   const [planInfo, setPlanInfo] = useState({ plan: 'starter', used: 0, limit: 200 })
+  const [open, setOpen] = useState(false)
   const user = getUser()
 
   useEffect(() => {
@@ -33,6 +34,8 @@ export default function Sidebar() {
       })
   }, [])
 
+  useEffect(() => { setOpen(false) }, [path])
+
   const pct = Math.min(100, Math.round((planInfo.used / planInfo.limit) * 100))
 
   const handleLogout = () => {
@@ -41,7 +44,31 @@ export default function Sidebar() {
   }
 
   return (
-    <aside className="w-56 flex-shrink-0 flex flex-col h-full" style={{ background: '#0D1F17' }}>
+    <>
+      {/* Mobile hamburger */}
+      <button
+        onClick={() => setOpen(o => !o)}
+        className="md:hidden fixed top-3 left-3 z-50 w-9 h-9 rounded-xl flex items-center justify-center"
+        style={{ background: '#0D1F17' }}>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+          {open
+            ? <path d="M18 6L6 18M6 6l12 12" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+            : <path d="M3 6h18M3 12h18M3 18h18" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+          }
+        </svg>
+      </button>
+
+      {/* Mobile overlay */}
+      {open && (
+        <div className="md:hidden fixed inset-0 z-40 bg-black/50" onClick={() => setOpen(false)} />
+      )}
+
+    <aside className={clsx(
+      'flex-shrink-0 flex flex-col h-full transition-transform duration-200 z-40',
+      'fixed md:relative',
+      open ? 'translate-x-0' : '-translate-x-full md:translate-x-0',
+      'w-56'
+    )} style={{ background: '#0D1F17' }}>
 
       {/* Logo */}
       <div className="px-5 py-5 border-b border-white/10">
@@ -139,6 +166,7 @@ export default function Sidebar() {
         </div>
       </div>
     </aside>
+    </>
   )
 }
 
