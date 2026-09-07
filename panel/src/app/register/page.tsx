@@ -34,33 +34,33 @@ export default function RegisterPage() {
       <div className="w-full max-w-sm">
         <div className="bg-white rounded-3xl shadow-sm border border-blue-50 p-8">
           <div className="w-12 h-12 rounded-2xl mx-auto mb-4 flex items-center justify-center"
-               style={{ background: '#E0F2FE' }}>
+               style={{ background: '#D6F5EC' }}>
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
               <path d="M9 12l2 2 4-4M12 3C7.03 3 3 7.03 3 12s4.03 9 9 9 9-4.03 9-9-4.03-9-9-9z"
-                stroke="#0284C7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                stroke="#00B37E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
           </div>
-          <h2 className="text-lg font-bold text-center mb-1" style={{ color: '#0B1A30' }}>Konto utworzone!</h2>
+          <h2 className="text-lg font-bold text-center mb-1" style={{ color: '#0D1F17' }}>Konto utworzone!</h2>
           <p className="text-xs text-center mb-5" style={{ color: '#64748B' }}>
             Zapisz swój klucz API — wyświetlamy go tylko raz
           </p>
 
-          <div className="rounded-xl p-3 mb-5 border" style={{ background: '#F0F7FF', borderColor: '#BAE6FD' }}>
-            <p className="text-[10px] font-semibold mb-1" style={{ color: '#0369A1' }}>TWÓJ KLUCZ API</p>
-            <code className="text-xs font-mono break-all" style={{ color: '#0B1A30' }}>{rawKey}</code>
+          <div className="rounded-xl p-3 mb-5 border" style={{ background: '#F5F8F6', borderColor: '#B3EDD8' }}>
+            <p className="text-[10px] font-semibold mb-1" style={{ color: '#007A57' }}>TWÓJ KLUCZ API</p>
+            <code className="text-xs font-mono break-all" style={{ color: '#0D1F17' }}>{rawKey}</code>
           </div>
 
           <button
             onClick={() => { navigator.clipboard.writeText(rawKey) }}
             className="w-full py-2 rounded-xl text-sm font-semibold mb-3 border transition-colors"
-            style={{ borderColor: '#BAE6FD', color: '#0284C7' }}>
+            style={{ borderColor: '#B3EDD8', color: '#00B37E' }}>
             Kopiuj klucz
           </button>
 
           <button
             onClick={() => router.push('/scan')}
             className="w-full py-2.5 rounded-xl text-sm font-semibold text-white transition-all hover:shadow-md"
-            style={{ background: 'linear-gradient(135deg, #38BDF8, #0284C7)' }}>
+            style={{ background: 'linear-gradient(135deg, #00E5A0, #00B37E)' }}>
             Przejdź do panelu →
           </button>
         </div>
@@ -72,20 +72,20 @@ export default function RegisterPage() {
     <div className="w-full max-w-sm">
       <div className="flex items-center gap-3 mb-8 justify-center">
         <div className="w-10 h-10 rounded-2xl flex items-center justify-center"
-             style={{ background: 'linear-gradient(135deg, #38BDF8, #0284C7)' }}>
+             style={{ background: 'linear-gradient(135deg, #00E5A0, #00B37E)' }}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
             <path d="M9 12h6M12 9v6M12 3C7.03 3 3 7.03 3 12s4.03 9 9 9 9-4.03 9-9-4.03-9-9-9z"
               stroke="white" strokeWidth="2" strokeLinecap="round"/>
           </svg>
         </div>
         <div>
-          <p className="text-lg font-bold" style={{ color: '#0B1A30' }}>IKZOCR</p>
+          <p className="text-lg font-bold" style={{ color: '#0D1F17' }}>IKZOCR</p>
           <p className="text-[11px]" style={{ color: '#64748B' }}>Platforma AI dla medycyny</p>
         </div>
       </div>
 
       <div className="bg-white rounded-3xl shadow-sm border border-blue-50 p-8">
-        <h1 className="text-xl font-bold mb-1" style={{ color: '#0B1A30' }}>Utwórz konto</h1>
+        <h1 className="text-xl font-bold mb-1" style={{ color: '#0D1F17' }}>Create account</h1>
         <p className="text-sm mb-6" style={{ color: '#64748B' }}>Rozpocznij 14-dniowy okres próbny — bez karty</p>
 
         {error && (
@@ -102,22 +102,22 @@ export default function RegisterPage() {
               onChange={e => setForm(p => ({ ...p, name: e.target.value }))}
               placeholder="Jan Kowalski"
               className="w-full text-sm border rounded-xl px-3.5 py-2.5 focus:outline-none transition-colors"
-              style={{ borderColor: '#BAE6FD' }}
-              onFocus={e => e.target.style.borderColor = '#0284C7'}
-              onBlur={e => e.target.style.borderColor = '#BAE6FD'}
+              style={{ borderColor: '#B3EDD8' }}
+              onFocus={e => e.target.style.borderColor = '#00B37E'}
+              onBlur={e => e.target.style.borderColor = '#B3EDD8'}
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold mb-1.5" style={{ color: '#475569' }}>Nazwa placówki</label>
+            <label className="block text-xs font-semibold mb-1.5" style={{ color: '#475569' }}>Facility name</label>
             <input
               value={form.facility_name}
               onChange={e => setForm(p => ({ ...p, facility_name: e.target.value }))}
               placeholder="Centrum Medyczne XYZ"
               className="w-full text-sm border rounded-xl px-3.5 py-2.5 focus:outline-none transition-colors"
-              style={{ borderColor: '#BAE6FD' }}
-              onFocus={e => e.target.style.borderColor = '#0284C7'}
-              onBlur={e => e.target.style.borderColor = '#BAE6FD'}
+              style={{ borderColor: '#B3EDD8' }}
+              onFocus={e => e.target.style.borderColor = '#00B37E'}
+              onBlur={e => e.target.style.borderColor = '#B3EDD8'}
             />
           </div>
 
@@ -128,9 +128,9 @@ export default function RegisterPage() {
               onChange={e => setForm(p => ({ ...p, email: e.target.value }))}
               placeholder="jan@placowka.pl"
               className="w-full text-sm border rounded-xl px-3.5 py-2.5 focus:outline-none transition-colors"
-              style={{ borderColor: '#BAE6FD' }}
-              onFocus={e => e.target.style.borderColor = '#0284C7'}
-              onBlur={e => e.target.style.borderColor = '#BAE6FD'}
+              style={{ borderColor: '#B3EDD8' }}
+              onFocus={e => e.target.style.borderColor = '#00B37E'}
+              onBlur={e => e.target.style.borderColor = '#B3EDD8'}
             />
           </div>
 
@@ -143,23 +143,23 @@ export default function RegisterPage() {
               onChange={e => setForm(p => ({ ...p, password: e.target.value }))}
               placeholder="••••••••"
               className="w-full text-sm border rounded-xl px-3.5 py-2.5 focus:outline-none transition-colors"
-              style={{ borderColor: '#BAE6FD' }}
-              onFocus={e => e.target.style.borderColor = '#0284C7'}
-              onBlur={e => e.target.style.borderColor = '#BAE6FD'}
+              style={{ borderColor: '#B3EDD8' }}
+              onFocus={e => e.target.style.borderColor = '#00B37E'}
+              onBlur={e => e.target.style.borderColor = '#B3EDD8'}
             />
           </div>
 
           <button
             type="submit" disabled={loading}
             className="w-full py-2.5 rounded-xl text-sm font-semibold text-white disabled:opacity-50 transition-all hover:shadow-md"
-            style={{ background: 'linear-gradient(135deg, #38BDF8, #0284C7)' }}>
-            {loading ? 'Tworzenie konta...' : 'Utwórz konto za darmo'}
+            style={{ background: 'linear-gradient(135deg, #00E5A0, #00B37E)' }}>
+            {loading ? 'Creating account...' : 'Create free account'}
           </button>
         </form>
 
         <p className="mt-5 text-center text-xs" style={{ color: '#94A3B8' }}>
           Masz już konto?{' '}
-          <Link href="/login" className="font-semibold" style={{ color: '#0284C7' }}>
+          <Link href="/login" className="font-semibold" style={{ color: '#00B37E' }}>
             Zaloguj się
           </Link>
         </p>

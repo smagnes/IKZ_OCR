@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="pl">
-      <body style={{ margin: 0, padding: 0, background: '#F0F7FF' }}>
+      <body style={{ margin: 0, padding: 0, background: '#F5F8F6' }}>
         <ConditionalLayout>{children}</ConditionalLayout>
       </body>
     </html>

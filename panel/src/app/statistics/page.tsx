@@ -8,7 +8,7 @@ const TYPE_LABELS: Record<string, string> = {
   ekg: 'EKG', skierowanie: 'Skierowanie', rtg_usg: 'RTG/USG', inny: 'Inne',
 }
 
-const OCEAN_COLORS = ['#0284C7', '#38BDF8', '#0369A1', '#7DD3FC', '#075985', '#BAE6FD', '#0C4A6E']
+const OCEAN_COLORS = ['#00B37E', '#00E5A0', '#007A57', '#4AE0A8', '#075985', '#B3EDD8', '#0C4A6E']
 
 export default function StatisticsPage() {
   const [stats, setStats] = useState<Stats | null>(null)
@@ -20,10 +20,10 @@ export default function StatisticsPage() {
 
   if (loading) return (
     <div className="flex items-center justify-center h-full">
-      <div className="flex items-center gap-3 text-sm" style={{ color: '#0284C7' }}>
+      <div className="flex items-center gap-3 text-sm" style={{ color: '#00B37E' }}>
         <div className="w-5 h-5 border-2 rounded-full animate-spin"
-             style={{ borderColor: '#0284C7', borderTopColor: 'transparent' }} />
-        Ładowanie statystyk...
+             style={{ borderColor: '#00B37E', borderTopColor: 'transparent' }} />
+        Loading statistics...
       </div>
     </div>
   )
@@ -31,7 +31,7 @@ export default function StatisticsPage() {
 
   const barData = Object.entries(stats.by_type).map(([k, v]) => ({ name: TYPE_LABELS[k] ?? k, value: v }))
   const pieData = Object.entries(stats.by_source).map(([k, v]) => ({
-    name: k === 'ikz_mobile' ? 'IKZ Mobile' : k === 'panel_www' ? 'Panel www' : 'API placówki',
+    name: k === 'ikz_mobile' ? 'IKZ Mobile' : k === 'panel_www' ? 'Panel www' : 'Facility API',
     value: v,
   }))
 
@@ -46,7 +46,7 @@ export default function StatisticsPage() {
     <div className="flex flex-col h-full">
       <header className="flex items-center justify-between px-6 py-3.5 bg-white border-b border-blue-100/60">
         <div>
-          <h1 className="text-sm font-semibold" style={{ color: '#0B1A30' }}>Statystyki</h1>
+          <h1 className="text-sm font-semibold" style={{ color: '#0D1F17' }}>Statystyki</h1>
           <p className="text-[11px] text-slate-400">Analiza skanowań i skuteczność OCR</p>
         </div>
         <select className="text-xs border border-blue-100 rounded-xl px-3 py-1.5 text-slate-600 bg-white focus:outline-none focus:ring-2 focus:ring-sky-200">
@@ -64,11 +64,11 @@ export default function StatisticsPage() {
               <div className="flex items-center justify-between mb-2">
                 <span className="text-base">{k.icon}</span>
                 <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
-                      style={{ background: '#E0F2FE', color: '#0284C7' }}>
+                      style={{ background: '#D6F5EC', color: '#00B37E' }}>
                   {k.delta}
                 </span>
               </div>
-              <p className="text-2xl font-bold" style={{ color: '#0B1A30' }}>{k.value}</p>
+              <p className="text-2xl font-bold" style={{ color: '#0D1F17' }}>{k.value}</p>
               <p className="text-[11px] text-slate-400 mt-0.5">{k.label}</p>
             </div>
           ))}
@@ -77,21 +77,21 @@ export default function StatisticsPage() {
         {/* Charts */}
         <div className="grid grid-cols-3 gap-4">
           <div className="col-span-2 bg-white border border-blue-50 rounded-2xl p-5">
-            <p className="text-[10px] font-semibold uppercase tracking-widest mb-4" style={{ color: '#0369A1' }}>
+            <p className="text-[10px] font-semibold uppercase tracking-widest mb-4" style={{ color: '#007A57' }}>
               Typy dokumentów
             </p>
             <ResponsiveContainer width="100%" height={200}>
               <BarChart data={barData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#E0F2FE" />
+                <CartesianGrid strokeDasharray="3 3" stroke="#D6F5EC" />
                 <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#94A3B8' }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fontSize: 11, fill: '#94A3B8' }} axisLine={false} tickLine={false} />
                 <Tooltip
-                  contentStyle={{ fontSize: 12, borderRadius: 12, border: '1px solid #BAE6FD', background: 'white' }}
-                  cursor={{ fill: '#E0F2FE' }}
+                  contentStyle={{ fontSize: 12, borderRadius: 12, border: '1px solid #B3EDD8', background: 'white' }}
+                  cursor={{ fill: '#D6F5EC' }}
                 />
                 <Bar dataKey="value" radius={[6, 6, 0, 0]}>
                   {barData.map((_, i) => (
-                    <Cell key={i} fill={i === 0 ? '#0284C7' : i === 1 ? '#38BDF8' : '#7DD3FC'} />
+                    <Cell key={i} fill={i === 0 ? '#00B37E' : i === 1 ? '#00E5A0' : '#4AE0A8'} />
                   ))}
                 </Bar>
               </BarChart>
@@ -99,8 +99,8 @@ export default function StatisticsPage() {
           </div>
 
           <div className="bg-white border border-blue-50 rounded-2xl p-5">
-            <p className="text-[10px] font-semibold uppercase tracking-widest mb-4" style={{ color: '#0369A1' }}>
-              Źródła skanów
+            <p className="text-[10px] font-semibold uppercase tracking-widest mb-4" style={{ color: '#007A57' }}>
+              Scan sources
             </p>
             <ResponsiveContainer width="100%" height={200}>
               <PieChart>
@@ -108,7 +108,7 @@ export default function StatisticsPage() {
                      dataKey="value" paddingAngle={4} startAngle={90} endAngle={-270}>
                   {pieData.map((_, i) => <Cell key={i} fill={OCEAN_COLORS[i % OCEAN_COLORS.length]} />)}
                 </Pie>
-                <Tooltip contentStyle={{ fontSize: 12, borderRadius: 12, border: '1px solid #BAE6FD' }} />
+                <Tooltip contentStyle={{ fontSize: 12, borderRadius: 12, border: '1px solid #B3EDD8' }} />
                 <Legend iconSize={8} iconType="circle" wrapperStyle={{ fontSize: 11, color: '#64748B' }} />
               </PieChart>
             </ResponsiveContainer>
@@ -117,7 +117,7 @@ export default function StatisticsPage() {
 
         {/* Source breakdown */}
         <div className="bg-white border border-blue-50 rounded-2xl p-5">
-          <p className="text-[10px] font-semibold uppercase tracking-widest mb-4" style={{ color: '#0369A1' }}>
+          <p className="text-[10px] font-semibold uppercase tracking-widest mb-4" style={{ color: '#007A57' }}>
             Szczegóły według źródła
           </p>
           <div className="divide-y divide-blue-50">
@@ -125,15 +125,15 @@ export default function StatisticsPage() {
               const total = Object.values(stats.by_source).reduce((a, b) => a + b, 0)
               const pct = Math.round((v / total) * 100)
               const icons: Record<string, string> = { ikz_mobile: '📱', panel_www: '🖥', api: '🔌', api_placowki: '🔌' }
-              const labels: Record<string, string> = { ikz_mobile: 'IKZ Mobile', panel_www: 'Panel www', api: 'API', api_placowki: 'API placówki' }
+              const labels: Record<string, string> = { ikz_mobile: 'IKZ Mobile', panel_www: 'Panel www', api: 'API', api_placowki: 'Facility API' }
               return (
                 <div key={k} className="flex items-center gap-4 py-3">
                   <span className="text-sm text-slate-700 w-36">{icons[k] ?? '•'} {labels[k] ?? k}</span>
-                  <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ background: '#E0F2FE' }}>
+                  <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ background: '#D6F5EC' }}>
                     <div className="h-full rounded-full transition-all"
-                         style={{ width: `${pct}%`, background: 'linear-gradient(90deg, #38BDF8, #0284C7)' }} />
+                         style={{ width: `${pct}%`, background: 'linear-gradient(90deg, #00E5A0, #00B37E)' }} />
                   </div>
-                  <span className="text-sm font-semibold w-16 text-right" style={{ color: '#0B1A30' }}>{v.toLocaleString()}</span>
+                  <span className="text-sm font-semibold w-16 text-right" style={{ color: '#0D1F17' }}>{v.toLocaleString()}</span>
                   <span className="text-xs text-slate-400 w-10 text-right">{pct}%</span>
                 </div>
               )

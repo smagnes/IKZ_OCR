@@ -3,16 +3,16 @@
 @tailwind components;
 @tailwind utilities;
 
-:root { --brand: #0284C7; }
+:root { --brand: #00B37E; }
 
 * { box-sizing: border-box; }
 
 body {
   font-family: 'Inter', system-ui, sans-serif;
-  background: #F0F7FF;
+  background: #F5F8F6;
   color: #0F172A;
   font-size: 14px;
 }
 
 .scrollbar-thin::-webkit-scrollbar { width: 4px; }
-.scrollbar-thin::-webkit-scrollbar-thumb { background: #BAE6FD; border-radius: 2px; }
+.scrollbar-thin::-webkit-scrollbar-thumb { background: #B3EDD8; border-radius: 2px; }

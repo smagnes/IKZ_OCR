@@ -86,20 +86,20 @@ export default function DocumentsPage() {
       {/* Header */}
       <header className="flex items-center justify-between px-6 py-3.5 bg-white border-b border-blue-100/60">
         <div>
-          <h1 className="text-sm font-semibold" style={{ color: '#0B1A30' }}>Archiwum dokumentów</h1>
+          <h1 className="text-sm font-semibold" style={{ color: '#0D1F17' }}>Archiwum dokumentów</h1>
           <p className="text-[11px] text-slate-400">Historia skanowań i wyniki OCR</p>
         </div>
         <div className="flex gap-2">
           {selectedId && (
             <button onClick={closeDetail}
               className="text-xs border border-blue-100 px-3 py-1.5 rounded-xl font-medium transition-colors hover:bg-blue-50"
-              style={{ color: '#0284C7' }}>
+              style={{ color: '#00B37E' }}>
               ← Lista dokumentów
             </button>
           )}
           <button onClick={() => exportDocumentsCsv().catch(e => alert(e.message))}
             className="text-xs border border-blue-100 px-3 py-1.5 rounded-xl text-slate-600 hover:bg-blue-50 transition-colors">
-            Eksport CSV
+            Export CSV
           </button>
         </div>
       </header>
@@ -112,9 +112,9 @@ export default function DocumentsPage() {
           { label: 'Śr. czas', value: '4.3s' },
           { label: 'Placówki', value: '6' },
         ].map(s => (
-          <div key={s.label} className="rounded-xl px-3 py-2" style={{ background: '#F0F7FF' }}>
+          <div key={s.label} className="rounded-xl px-3 py-2" style={{ background: '#F5F8F6' }}>
             <p className="text-[10px] text-slate-400">{s.label}</p>
-            <p className="text-lg font-bold mt-0.5" style={{ color: '#0B1A30' }}>{s.value}</p>
+            <p className="text-lg font-bold mt-0.5" style={{ color: '#0D1F17' }}>{s.value}</p>
           </div>
         ))}
       </div>
@@ -125,8 +125,8 @@ export default function DocumentsPage() {
           <button key={f} onClick={() => { setFilter(f); closeDetail() }}
             className="text-xs px-3 py-1.5 rounded-full whitespace-nowrap transition-all font-medium"
             style={filter === f
-              ? { background: 'linear-gradient(135deg, #38BDF8, #0284C7)', color: 'white' }
-              : { background: '#F0F7FF', color: '#475569' }}>
+              ? { background: 'linear-gradient(135deg, #00E5A0, #00B37E)', color: 'white' }
+              : { background: '#F5F8F6', color: '#475569' }}>
             {f === 'wszystkie' ? 'Wszystkie' : TYPE_LABELS[f] ?? f}
           </button>
         ))}
@@ -140,26 +140,26 @@ export default function DocumentsPage() {
           selectedId ? 'w-[45%] border-r border-blue-50' : 'w-full')}>
           <div className="flex-1 overflow-y-auto scrollbar-thin">
             {loading ? (
-              <div className="flex items-center justify-center h-32 gap-2 text-sm" style={{ color: '#0284C7' }}>
+              <div className="flex items-center justify-center h-32 gap-2 text-sm" style={{ color: '#00B37E' }}>
                 <div className="w-4 h-4 border-2 rounded-full animate-spin"
-                     style={{ borderColor: '#0284C7', borderTopColor: 'transparent' }} />
-                Ładowanie...
+                     style={{ borderColor: '#00B37E', borderTopColor: 'transparent' }} />
+                Loading...
               </div>
             ) : docs.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-48 gap-2 text-slate-400">
                 <p className="text-3xl">📭</p>
-                <p className="text-sm">Brak dokumentów — wgraj pierwszy skan</p>
+                <p className="text-sm">No documents yet — upload your first scan</p>
               </div>
             ) : (
               <table className="w-full text-sm">
                 <thead className="sticky top-0 z-10">
-                  <tr style={{ background: '#F0F7FF' }}>
+                  <tr style={{ background: '#F5F8F6' }}>
                     {(selectedId
                       ? ['Placówka', 'Typ', 'Pacjent', 'Alert', '']
                       : ['Placówka', 'Typ', 'Pacjent', 'Data', 'Źródło', 'Alert', 'Pewność', 'Status', '']
                     ).map(h => (
                       <th key={h} className="text-left px-4 py-2.5"
-                          style={{ fontSize: 10, color: '#0369A1', fontWeight: 600,
+                          style={{ fontSize: 10, color: '#007A57', fontWeight: 600,
                                    letterSpacing: '0.08em', textTransform: 'uppercase' }}>
                         {h}
                       </th>
@@ -187,7 +187,7 @@ export default function DocumentsPage() {
                         {/* Typ dokumentu */}
                         <td className="px-4 py-3">
                           <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
-                                style={{ background: '#E0F2FE', color: '#0284C7' }}>
+                                style={{ background: '#D6F5EC', color: '#00B37E' }}>
                             {String(doc.doc_type_label ?? TYPE_LABELS[String(doc.doc_type ?? '')] ?? '—')}
                           </span>
                         </td>
@@ -212,11 +212,11 @@ export default function DocumentsPage() {
                           <td className="px-4 py-3">
                             {doc.confidence_overall != null ? (
                               <div className="flex items-center gap-2">
-                                <div className="w-12 h-1.5 rounded-full overflow-hidden" style={{ background: '#E0F2FE' }}>
+                                <div className="w-12 h-1.5 rounded-full overflow-hidden" style={{ background: '#D6F5EC' }}>
                                   <div className="h-full rounded-full"
-                                       style={{ width: `${Math.round(Number(doc.confidence_overall) * 100)}%`, background: '#0284C7' }} />
+                                       style={{ width: `${Math.round(Number(doc.confidence_overall) * 100)}%`, background: '#00B37E' }} />
                                 </div>
-                                <span className="text-xs font-medium" style={{ color: '#0284C7' }}>
+                                <span className="text-xs font-medium" style={{ color: '#00B37E' }}>
                                   {Math.round(Number(doc.confidence_overall) * 100)}%
                                 </span>
                               </div>
@@ -224,7 +224,7 @@ export default function DocumentsPage() {
                           </td>
                           <td className="px-4 py-3">
                             <span className="text-xs px-2.5 py-1 rounded-full font-medium"
-                                  style={{ background: '#E0F2FE', color: '#0284C7' }}>
+                                  style={{ background: '#D6F5EC', color: '#00B37E' }}>
                               ✓ Gotowe
                             </span>
                           </td>
@@ -236,7 +236,7 @@ export default function DocumentsPage() {
                               setDeleteLabel(String(doc.doc_type_label ?? TYPE_LABELS[String(doc.doc_type ?? '')] ?? id.slice(0, 8)))
                             }}
                             className="text-xs text-red-400 hover:text-red-600 hover:bg-red-50 px-2 py-1 rounded-lg transition-colors font-medium">
-                            Usuń
+                            Delete
                           </button>
                         </td>
                       </tr>
@@ -261,7 +261,7 @@ export default function DocumentsPage() {
                     fn(selectedId).catch(e => alert(e.message))
                   }}
                   className="text-[11px] font-mono font-semibold px-2.5 py-1 rounded-lg border transition-colors hover:bg-blue-50"
-                  style={{ borderColor: '#BAE6FD', color: '#0284C7' }}>
+                  style={{ borderColor: '#B3EDD8', color: '#00B37E' }}>
                   .{ext}
                 </button>
               ))}
@@ -270,8 +270,8 @@ export default function DocumentsPage() {
               {detailLoading ? (
                 <div className="flex flex-col items-center justify-center h-64 gap-3">
                   <div className="w-8 h-8 border-2 rounded-full animate-spin"
-                       style={{ borderColor: '#0284C7', borderTopColor: 'transparent' }} />
-                  <p className="text-sm text-slate-400">Ładowanie wyników…</p>
+                       style={{ borderColor: '#00B37E', borderTopColor: 'transparent' }} />
+                  <p className="text-sm text-slate-400">Loading results…</p>
                 </div>
               ) : detailResult ? (
                 <MedicalResultView result={detailResult} />
@@ -295,7 +295,7 @@ export default function DocumentsPage() {
                 <span className="text-red-500 text-lg">🗑</span>
               </div>
               <div>
-                <h2 className="text-sm font-semibold text-slate-900">Usuń dokument</h2>
+                <h2 className="text-sm font-semibold text-slate-900">Delete document</h2>
                 <p className="text-xs text-slate-400 mt-0.5">Ta operacja jest nieodwracalna</p>
               </div>
             </div>
@@ -306,13 +306,13 @@ export default function DocumentsPage() {
             <div className="flex gap-2">
               <button onClick={() => setDeleteTarget(null)} disabled={deleting}
                 className="flex-1 text-sm border border-slate-200 rounded-xl py-2 text-slate-600 hover:bg-slate-50 transition-colors disabled:opacity-50">
-                Anuluj
+                Cancel
               </button>
               <button onClick={confirmDelete} disabled={deleting}
                 className="flex-1 text-sm bg-red-500 text-white rounded-xl py-2 font-medium hover:bg-red-600 transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
                 {deleting
                   ? <><div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />Usuwanie…</>
-                  : 'Usuń dokument'}
+                  : 'Delete document'}
               </button>
             </div>
           </div>

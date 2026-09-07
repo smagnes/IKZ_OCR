@@ -22,7 +22,7 @@ export default function ConditionalLayout({ children }: { children: React.ReactN
 
   if (isAuthPage) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: '#F0F7FF' }}>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#F5F8F6' }}>
         {children}
       </div>
     )
@@ -30,15 +30,15 @@ export default function ConditionalLayout({ children }: { children: React.ReactN
 
   if (checking) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: '#F0F7FF' }}>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#F5F8F6' }}>
         <div className="w-6 h-6 border-2 rounded-full animate-spin"
-             style={{ borderColor: '#0284C7', borderTopColor: 'transparent' }} />
+             style={{ borderColor: '#00B37E', borderTopColor: 'transparent' }} />
       </div>
     )
   }
 
   return (
-    <div className="flex h-screen overflow-hidden" style={{ background: '#F0F7FF' }}>
+    <div className="flex h-screen overflow-hidden" style={{ background: '#F5F8F6' }}>
       <Sidebar />
       <main className="flex-1 overflow-hidden flex flex-col">
         {children}
