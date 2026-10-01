@@ -46,3 +46,4 @@ models/
 *.safetensors
 *.ckpt
 *.bin
+llama-b5600-bin-ubuntu-x64.zip
