@@ -1,0 +1,8 @@
+services:
+  postgres:
+    profiles:
+      - disabled
+  panel:
+    environment:
+      - NEXT_PUBLIC_API_URL=/api/proxy
+      - NEXT_PUBLIC_API_KEY=mk_prod_demo123

@@ -633,3 +633,71 @@ async def list_api_keys(key_record: dict = Depends(verify_api_key)):
         }
         for k in keys
     ]}
+
+@app.post("/translate", summary="Medical document translation")
+async def translate_document(
+    file: UploadFile = File(...),
+    authorization: str = Header(...),
+):
+    try:
+        token = authorization.split(" ", 1)[1]
+        from jose import jwt as jose_jwt
+        jose_jwt.decode(token, settings.jwt_secret, algorithms=["HS256"])
+    except Exception:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    import anthropic as _anthropic, os, json as _json, base64 as _b64, time as _time, re as _re, io as _io
+    data = await file.read()
+    t_start = _time.perf_counter()
+    client = _anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY",""))
+
+    try:
+        media = (file.content_type or "").lower()
+        b64 = _b64.b64encode(data).decode()
+
+        # Step 1: OCR - extract original text verbatim
+        if "pdf" in media:
+            ocr_msg = client.beta.messages.create(
+                model="claude-haiku-4-5-20251001", max_tokens=4000,
+                betas=["pdfs-2024-09-25"],
+                messages=[{"role": "user", "content": [
+                    {"type": "document", "source": {"type": "base64", "media_type": "application/pdf", "data": b64}},
+                    {"type": "text", "text": "Extract ALL text from this medical document verbatim in the original language. Return only the raw text, nothing else."}
+                ]}])
+        else:
+            if media not in ["image/jpeg", "image/png", "image/gif", "image/webp"]:
+                media = "image/jpeg"
+            ocr_msg = client.messages.create(
+                model="claude-haiku-4-5-20251001", max_tokens=4000,
+                messages=[{"role": "user", "content": [
+                    {"type": "image", "source": {"type": "base64", "media_type": media, "data": b64}},
+                    {"type": "text", "text": "Extract ALL text from this medical document verbatim in the original language. Return only the raw text, nothing else."}
+                ]}])
+
+        original_text = ocr_msg.content[0].text.strip()
+
+        # Step 2: Translate and structure
+        trans_prompt = ('Analyze this medical document and respond ONLY with valid JSON (no markdown, no extra text):\n'
+                        '{"source_language":"language name","translated_text":"full structured English translation",'
+                        '"document_type":"e.g. Lab Results / Discharge Summary / ECG",'
+                        '"key_findings":[{"label":"param","value":"val with units","flag":"normal|high|low"}],'
+                        '"clinical_notes":"2-3 sentence summary for physician"}\n\nDOCUMENT:\n')
+        trans_msg = client.messages.create(
+            model="claude-haiku-4-5-20251001", max_tokens=3000,
+            messages=[{"role": "user", "content": trans_prompt + original_text}])
+
+        raw = trans_msg.content[0].text.strip()
+        raw = _re.sub(r"^```[a-zA-Z]*\n?", "", raw)
+        raw = _re.sub(r"\n?```$", "", raw).strip()
+        if not raw:
+            raise ValueError("Empty response from Claude")
+        result = _json.loads(raw)
+    except Exception as exc:
+        logger.error("Translate error: %s", exc)
+        raise HTTPException(status_code=500, detail=f"Translation failed: {exc}")
+
+    result["original_text"] = original_text
+    result["processing_time_ms"] = int((_time.perf_counter() - t_start) * 1000)
+    result.setdefault("key_findings", [])
+    result.setdefault("clinical_notes", "")
+    return result
