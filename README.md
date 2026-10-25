@@ -2,7 +2,7 @@
 
 Pierwsze w Polsce rozwiązanie AI do automatycznego rozpoznawania i strukturyzowania danych z dokumentów medycznych.
 
-> **Wersja:** 0.3.0 · [Changelog](CHANGELOG.md) · [Licencja](LICENSE)
+> **Wersja:** 1.0.0 · [Changelog](CHANGELOG.md) · [Licencja](LICENSE)
 
 ## Dokumentacja
 

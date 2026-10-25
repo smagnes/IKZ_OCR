@@ -6,6 +6,29 @@ Format oparty na [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [1.0.0] — 2026-10-01
+
+### Dodano
+- **Endpoint tłumaczenia** `POST /translate` — tłumaczenie dokumentów medycznych z 6 języków (PL, DE, FR, ES, CZ, IT) na angielski; pipeline: OCR → Translate → Structure → Analyze
+- **Wykrywanie wartości krytycznych** — automatyczne flagowanie wyników poza zakresem referencyjnym (alert: LOW/HIGH) w odpowiedzi JSON
+- **Wysyłka wyników emailem** `POST /v1/documents/send-email` — wysyłka wyniku skanu na adres email pacjenta/lekarza
+- **Eksport do Markdown** na poziomie całej listy dokumentów (`/v1/documents/export.md`)
+- Obsługa proxy w panelu Next.js (`/api/proxy/[...path]`) — routing requestów z frontendu do API
+- `.dockerignore` dla obrazu API — mniejszy rozmiar obrazu
+
+### Zmieniono
+- Wersja API: `0.3.0` → `1.0.0`
+- Refaktor `api/ocr/processor.py` — uproszczona logika ekstrakcji parametrów morfologii, lepsza obsługa wariantów formatowania placówek
+- `docker-compose.yml` — uproszczona konfiguracja, usunięcie nieużywanych serwisów (nats, prometheus, grafana) z domyślnego compose; dostępne przez `docker-compose.override.yml`
+- `api/Dockerfile` — optymalizacja warstw, dodanie zależności dla tłumaczenia
+- `api/requirements.txt` — dodano pakiety dla translate endpoint
+
+### Naprawiono
+- Połączenie z bazą Supabase przez IPv4 (session pooler `aws-0-eu-central-1.pooler.supabase.com`) zamiast direct connection IPv6 niedostępnego z GCP
+- CORS — nagłówki nie były zwracane przy błędzie 500 z bazy danych
+
+---
+
 ## [0.3.0] — 2026-07-27
 
 ### Dodano
@@ -61,7 +84,7 @@ Format oparty na [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - [ ] Webhook — powiadomienia o zakończeniu skanowania
 - [ ] Integracja z HIS (HL7 FHIR)
 - [ ] Obsługa dokumentów wielostronicowych (batch)
-- [ ] Dashboard analityczny (statystyki skanowań)
 - [ ] Audit trail — logi operacji dla RODO
 - [ ] SMTP — wysyłka powiadomień email
 - [ ] Audyt zewnętrzny bezpieczeństwa (NIS2, Q4 2026)
+- [ ] Android — IKZmed na Android
