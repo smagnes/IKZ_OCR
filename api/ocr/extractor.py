@@ -96,15 +96,38 @@ def _extract_results(text: str) -> List[Dict[str, Any]]:
         if len(name) < 3 or key in _SKIP_NAMES or key in seen:
             return
         seen.add(key)
+        # Normalize Unicode arrows/symbols to ASCII flags
+        if flag in ('⇑', '↑', 'H', 'h'):
+            flag_norm = 'H'
+        elif flag in ('⇓', '↓', 'L', 'l'):
+            flag_norm = 'L'
+        else:
+            flag_norm = None
         results.append({
             "name": name,
             "value": value.replace(',', '.'),
             "unit": unit,
             "range": rng or None,
-            "flag": flag.upper() if flag else None,
+            "flag": flag_norm,
         })
 
-    # Specific patterns first
+    # Polish hospital table format:
+    # "Nazwa bad.   Wynik   Zakres ref.   J. miary   Uwagi"
+    # "Glukoza      105     70 - 99       mg/dL       ⇑"
+    _TABLE_ROW = re.compile(
+        r'^[ \t]*([A-ZŻŹĆĄŚĘŁÓŃ][A-Za-ząęółśżźćńĄĘÓŁŚŻŹĆŃ][A-Za-ząęółśżźćńĄĘÓŁŚŻŹĆŃ\s\(\)/\-]{0,38}?)'
+        r'[ \t]{2,}([\d,\.]+)'
+        r'[ \t]+([\d,\.]+ ?- ?[\d,\.]+)'
+        r'[ \t]+([a-zA-Z/%µ][a-zA-Z/%µ\d\.\*]*(?:/[a-zA-Z\d]+)?)'
+        r'[ \t]*(⇑|⇓|↑|↓|[LHlh&])?',
+        re.MULTILINE
+    )
+
+    for m in _TABLE_ROW.finditer(text):
+        flag_raw = (m.group(5) or '').strip()
+        _add(m.group(1), m.group(2), m.group(4), m.group(3).replace(' ', ''), flag_raw)
+
+    # Specific named-test patterns
     for m in _LAB_PATTERN.finditer(text):
         _add(m.group(1), m.group(2), m.group(3), m.group(4), m.group(5) or "")
 
