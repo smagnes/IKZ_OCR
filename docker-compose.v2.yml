@@ -1,0 +1,119 @@
+version: '3.9'
+
+# IKZOCR v2 — lokalny silnik (PaddleOCR, bez Claude API)
+# Nowa VM testowa, integracja z keepithealthy.pl / Dr Kiwi
+
+networks:
+  medyk_net:
+    driver: bridge
+
+volumes:
+  redis_data:
+  paddle_models:
+  grafana_data:
+  prometheus_data:
+
+services:
+
+  ocr-api:
+    build:
+      context: ./api
+      dockerfile: ../Dockerfile.paddle
+    container_name: medyk_ocr_api_v2
+    depends_on:
+      redis:
+        condition: service_healthy
+    env_file:
+      - ./api/.env
+    environment:
+      - OCR_ENGINE=paddle
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 180s
+    networks:
+      - medyk_net
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+    volumes:
+      - paddle_models:/root/.paddlex
+
+  panel:
+    build:
+      context: ./panel
+      dockerfile: Dockerfile
+    container_name: medyk_panel_v2
+    depends_on:
+      - ocr-api
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+      - NEXT_PUBLIC_API_KEY=mk_test_v2_keepit
+    networks:
+      - medyk_net
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: medyk_redis_v2
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - medyk_net
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+
+  nats:
+    image: nats:latest
+    container_name: medyk_nats_v2
+    networks:
+      - medyk_net
+    ports:
+      - "4222:4222"
+      - "8222:8222"
+    restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: medyk_prometheus_v2
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --storage.tsdb.retention.time=30d
+    networks:
+      - medyk_net
+    ports:
+      - "9090:9090"
+    restart: unless-stopped
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: medyk_grafana_v2
+    depends_on:
+      - prometheus
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=medyk2026
+      - GF_USERS_ALLOW_SIGN_UP=false
+    networks:
+      - medyk_net
+    ports:
+      - "3001:3000"
+    restart: unless-stopped
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
