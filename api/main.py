@@ -1,6 +1,7 @@
 import time
 import uuid
 import logging
+import os
 from contextlib import asynccontextmanager
 from datetime import datetime, timedelta, timezone
 from typing import Optional
@@ -25,6 +26,8 @@ from schemas import ScanResponse, ConfidenceScores, ScanStatsResponse, ApiKeyCre
 from ocr.processor import load_models, run_ocr_on_bytes
 from ocr.classifier import classify, DOC_TYPE_LABELS
 from ocr.parser import parse_document
+from ocr.anonymizer import anonymize
+from ocr.extractor import extract_structured
 import db
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
@@ -634,70 +637,152 @@ async def list_api_keys(key_record: dict = Depends(verify_api_key)):
         for k in keys
     ]}
 
-@app.post("/translate", summary="Medical document translation")
+# ── TRANSLATE ENDPOINT ────────────────────────────────────────────────────────
+
+import anthropic as _anthropic
+import base64 as _b64
+import json as _json
+
+class TranslateResponse(BaseModel):
+    original_text: str
+    translated_text: str
+    document_type: str
+    key_findings: list
+    clinical_notes: str
+    source_language: str
+    processing_time_ms: int
+
+@app.post("/translate", summary="Translate medical document to English")
 async def translate_document(
     file: UploadFile = File(...),
-    authorization: str = Header(...),
+    current_user: dict = Depends(verify_jwt_user),
 ):
-    try:
-        token = authorization.split(" ", 1)[1]
-        from jose import jwt as jose_jwt
-        jose_jwt.decode(token, settings.jwt_secret, algorithms=["HS256"])
-    except Exception:
-        raise HTTPException(status_code=401, detail="Unauthorized")
+    if file.content_type not in ALLOWED_TYPES:
+        raise HTTPException(status_code=415, detail=f"Unsupported format: {file.content_type}")
 
-    import anthropic as _anthropic, os, json as _json, base64 as _b64, time as _time, re as _re, io as _io
     data = await file.read()
-    t_start = _time.perf_counter()
-    client = _anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY",""))
+    if len(data) > MAX_SIZE_MB * 1024 * 1024:
+        raise HTTPException(status_code=413, detail=f"File too large (max {MAX_SIZE_MB} MB)")
+
+    t_start = time.perf_counter()
+
+    # Step 1: OCR
+    try:
+        raw_text = run_ocr_on_bytes(data, file.content_type)
+    except Exception as exc:
+        logger.error("OCR error in translate: %s", exc, exc_info=True)
+        raise HTTPException(status_code=500, detail="OCR processing error")
+
+    if not raw_text or len(raw_text.strip()) < 10:
+        raise HTTPException(status_code=422, detail="Could not extract text from document")
+
+    # Step 2: Claude — translate + structure
+    api_key = os.environ.get("ANTHROPIC_API_KEY", "")
+    if not api_key:
+        raise HTTPException(status_code=503, detail="Translation service not configured")
+
+    client = _anthropic.Anthropic(api_key=api_key)
+
+    system_prompt = (
+        "You are a medical document translator and analyzer. "
+        "Given raw OCR text from a medical document, you will:\n"
+        "1. Detect the source language\n"
+        "2. Translate the full text to English, preserving medical terminology\n"
+        "3. Identify the document type\n"
+        "4. Extract key medical findings/values as structured data\n"
+        "5. Write a brief clinical summary in English\n\n"
+        "Respond ONLY with valid JSON in this exact schema:\n"
+        "{\n"
+        '  "source_language": "string (e.g. Polish, German, French)",\n'
+        '  "document_type": "string (e.g. Blood Test, Discharge Summary, Prescription)",\n'
+        '  "translated_text": "full English translation of the document",\n'
+        '  "key_findings": [\n'
+        '    {"label": "parameter name", "value": "value with unit", "flag": "normal|high|low"}\n'
+        "  ],\n"
+        '  "clinical_notes": "2-3 sentence clinical summary in English"\n'
+        "}"
+    )
 
     try:
-        media = (file.content_type or "").lower()
-        b64 = _b64.b64encode(data).decode()
-
-        # Step 1: OCR - extract original text verbatim
-        if "pdf" in media:
-            ocr_msg = client.beta.messages.create(
-                model="claude-haiku-4-5-20251001", max_tokens=4000,
-                betas=["pdfs-2024-09-25"],
-                messages=[{"role": "user", "content": [
-                    {"type": "document", "source": {"type": "base64", "media_type": "application/pdf", "data": b64}},
-                    {"type": "text", "text": "Extract ALL text from this medical document verbatim in the original language. Return only the raw text, nothing else."}
-                ]}])
-        else:
-            if media not in ["image/jpeg", "image/png", "image/gif", "image/webp"]:
-                media = "image/jpeg"
-            ocr_msg = client.messages.create(
-                model="claude-haiku-4-5-20251001", max_tokens=4000,
-                messages=[{"role": "user", "content": [
-                    {"type": "image", "source": {"type": "base64", "media_type": media, "data": b64}},
-                    {"type": "text", "text": "Extract ALL text from this medical document verbatim in the original language. Return only the raw text, nothing else."}
-                ]}])
-
-        original_text = ocr_msg.content[0].text.strip()
-
-        # Step 2: Translate and structure
-        trans_prompt = ('Analyze this medical document and respond ONLY with valid JSON (no markdown, no extra text):\n'
-                        '{"source_language":"language name","translated_text":"full structured English translation",'
-                        '"document_type":"e.g. Lab Results / Discharge Summary / ECG",'
-                        '"key_findings":[{"label":"param","value":"val with units","flag":"normal|high|low"}],'
-                        '"clinical_notes":"2-3 sentence summary for physician"}\n\nDOCUMENT:\n')
-        trans_msg = client.messages.create(
-            model="claude-haiku-4-5-20251001", max_tokens=3000,
-            messages=[{"role": "user", "content": trans_prompt + original_text}])
-
-        raw = trans_msg.content[0].text.strip()
-        raw = _re.sub(r"^```[a-zA-Z]*\n?", "", raw)
-        raw = _re.sub(r"\n?```$", "", raw).strip()
-        if not raw:
-            raise ValueError("Empty response from Claude")
-        result = _json.loads(raw)
+        message = client.messages.create(
+            model="claude-opus-4-5",
+            max_tokens=2048,
+            system=system_prompt,
+            messages=[{
+                "role": "user",
+                "content": f"Medical document OCR text:\n\n{raw_text[:8000]}"
+            }]
+        )
+        raw_response = message.content[0].text.strip()
+        # Strip markdown code fences if present
+        if raw_response.startswith("```"):
+            raw_response = "\n".join(raw_response.split("\n")[1:])
+            raw_response = raw_response.rsplit("```", 1)[0].strip()
+        parsed = _json.loads(raw_response)
+    except _json.JSONDecodeError:
+        raise HTTPException(status_code=500, detail="Translation response parse error")
     except Exception as exc:
-        logger.error("Translate error: %s", exc)
-        raise HTTPException(status_code=500, detail=f"Translation failed: {exc}")
+        logger.error("Claude translate error: %s", exc, exc_info=True)
+        raise HTTPException(status_code=500, detail="AI translation error")
 
-    result["original_text"] = original_text
-    result["processing_time_ms"] = int((_time.perf_counter() - t_start) * 1000)
-    result.setdefault("key_findings", [])
-    result.setdefault("clinical_notes", "")
-    return result
+    elapsed_ms = int((time.perf_counter() - t_start) * 1000)
+    logger.info("Translate | lang=%s | type=%s | time=%dms", parsed.get("source_language"), parsed.get("document_type"), elapsed_ms)
+
+    return {
+        "original_text": raw_text,
+        "translated_text": parsed.get("translated_text", ""),
+        "document_type": parsed.get("document_type", "Medical Document"),
+        "key_findings": parsed.get("key_findings", []),
+        "clinical_notes": parsed.get("clinical_notes", ""),
+        "source_language": parsed.get("source_language", "Unknown"),
+        "processing_time_ms": elapsed_ms,
+    }
+
+
+# ── Lokalny endpoint — Paddle OCR + anonimizacja + JSON (zero zewnętrznych API) ──
+
+@app.post("/v1/scan/local", summary="Skanuj lokalnie — bez zewnętrznych API, z anonimizacją RODO")
+async def scan_local(
+    file: UploadFile = File(...),
+    api_key: Optional[str] = Header(default=None, alias="X-Api-Key"),
+):
+    """
+    Endpoint dla placówek medycznych.
+    - OCR: PaddleOCR lokalnie (bez chmury)
+    - Anonimizacja: PESEL, imię, adres usunięte przed zwrotem
+    - Output: minimalny JSON do integracji
+    """
+    if file.content_type not in ALLOWED_TYPES:
+        raise HTTPException(status_code=415, detail=f"Nieobsługiwany format: {file.content_type}")
+
+    data = await file.read()
+    if len(data) > MAX_SIZE_MB * 1024 * 1024:
+        raise HTTPException(status_code=413, detail=f"Plik zbyt duży (maks. {MAX_SIZE_MB} MB)")
+
+    t_start = time.perf_counter()
+
+    # Wymuszamy Paddle — bez Claude API
+    import os as _os
+    _os.environ["OCR_ENGINE"] = "paddle"
+    from ocr import processor as _proc
+    import importlib as _il
+    _il.reload(_proc)
+    _proc.load_models()
+
+    raw_text = _proc.run_ocr_on_bytes(data, file.content_type)
+    anon_text = anonymize(raw_text)
+    structured = extract_structured(anon_text)
+
+    elapsed_ms = int((time.perf_counter() - t_start) * 1000)
+
+    return {
+        "ok": True,
+        "processing_time_ms": elapsed_ms,
+        "engine": "paddle_local",
+        "doc_type": structured["doc_type"],
+        "results": structured["results"],
+        "medications": structured["medications"],
+        "dates": structured["dates"],
+        "facility": structured["facility"],
+        "anonymized_text": anon_text,
+    }

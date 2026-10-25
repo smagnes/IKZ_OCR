@@ -21,7 +21,7 @@ def load_models():
     if OCR_ENGINE == "paddle":
         try:
             from paddleocr import PaddleOCR
-            _paddle_ocr = PaddleOCR(use_angle_cls=True, lang="en", show_log=False)
+            _paddle_ocr = PaddleOCR(use_angle_cls=True, lang="en")
             logger.info("PaddleOCR loaded")
         except Exception as e:
             logger.error("PaddleOCR load failed: %s", e)
@@ -47,13 +47,13 @@ def _pdf_to_images(data: bytes) -> list[Image.Image]:
         return [Image.new("RGB", (2480, 3508), "white") for _ in reader.pages]
 
 
-def _load_image(data: bytes, content_type: str) -> list[Image.Image]:
+def _load_image(data: bytes, content_type: str):
     if "pdf" in content_type:
         return _pdf_to_images(data)
     return [Image.open(io.BytesIO(data)).convert("RGB")]
 
 
-def _try_pdftotext(data: bytes) -> str | None:
+def _try_pdftotext(data: bytes):
     import subprocess
     try:
         result = subprocess.run(
@@ -116,19 +116,18 @@ def _claude_ocr_pdf(data: bytes) -> str:
 
 # ── PaddleOCR ─────────────────────────────────────────────────────────────────
 
-def _paddle_ocr_images(images: list[Image.Image]) -> str:
+def _paddle_ocr_images(images):
     global _paddle_ocr
     if _paddle_ocr is None:
         from paddleocr import PaddleOCR
-        _paddle_ocr = PaddleOCR(use_angle_cls=True, lang="en", show_log=False)
+        _paddle_ocr = PaddleOCR(use_angle_cls=True, lang="en")
+    import numpy as np
     lines = []
     for img in images:
-        import numpy as np
         arr = np.array(img)
-        result = _paddle_ocr.ocr(arr, cls=True)
-        if result and result[0]:
-            for line in result[0]:
-                lines.append(line[1][0])
+        for res in _paddle_ocr.predict(arr):
+            texts = res.get("rec_texts", [])
+            lines.extend(t for t in texts if t and t.strip())
     return "\n".join(lines)
 
 
