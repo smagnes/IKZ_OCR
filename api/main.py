@@ -26,6 +26,8 @@ from schemas import ScanResponse, ConfidenceScores, ScanStatsResponse, ApiKeyCre
 from ocr.processor import load_models, run_ocr_on_bytes
 from ocr.classifier import classify, DOC_TYPE_LABELS
 from ocr.parser import parse_document
+from ocr.anonymizer import anonymize
+from ocr.extractor import extract_structured
 import db
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
@@ -733,5 +735,102 @@ async def translate_document(
         "key_findings": parsed.get("key_findings", []),
         "clinical_notes": parsed.get("clinical_notes", ""),
         "source_language": parsed.get("source_language", "Unknown"),
+        "processing_time_ms": elapsed_ms,
+    }
+
+
+# ── Lokalny endpoint — Paddle OCR + anonimizacja + JSON (zero zewnętrznych API) ──
+
+@app.post("/v1/scan/local", summary="Skanuj lokalnie — bez zewnętrznych API, z anonimizacją RODO")
+async def scan_local(
+    file: UploadFile = File(...),
+    api_key: Optional[str] = Header(default=None, alias="X-Api-Key"),
+):
+    """
+    Endpoint dla placówek medycznych.
+    - OCR: PaddleOCR lokalnie (bez chmury)
+    - Anonimizacja: PESEL, imię, adres usunięte przed zwrotem
+    - Output: minimalny JSON do integracji
+    """
+    if file.content_type not in ALLOWED_TYPES:
+        raise HTTPException(status_code=415, detail=f"Nieobsługiwany format: {file.content_type}")
+
+    data = await file.read()
+    if len(data) > MAX_SIZE_MB * 1024 * 1024:
+        raise HTTPException(status_code=413, detail=f"Plik zbyt duży (maks. {MAX_SIZE_MB} MB)")
+
+    t_start = time.perf_counter()
+
+    # Wymuszamy Paddle — bez Claude API
+    import os as _os
+    _os.environ["OCR_ENGINE"] = "paddle"
+    from ocr import processor as _proc
+    import importlib as _il
+    _il.reload(_proc)
+    _proc.load_models()
+
+    raw_text = _proc.run_ocr_on_bytes(data, file.content_type)
+    anon_text = anonymize(raw_text)
+    structured = extract_structured(anon_text)
+
+    elapsed_ms = int((time.perf_counter() - t_start) * 1000)
+
+    return {
+        "ok": True,
+        "processing_time_ms": elapsed_ms,
+        "engine": "paddle_local",
+        "doc_type": structured["doc_type"],
+        "results": structured["results"],
+        "medications": structured["medications"],
+        "dates": structured["dates"],
+        "facility": structured["facility"],
+        "anonymized_text": anon_text,
+    }
+
+
+# ── Lokalny endpoint — tłumaczenie PL→EN bez Claude API ──────────────────────
+
+class TranslateLocalRequest(BaseModel):
+    text: str
+    anonymize_first: bool = True
+
+
+@app.post("/v1/translate/local", summary="Tłumacz PL→EN lokalnie — Helsinki-NLP, zero zewnętrznych API")
+async def translate_local(
+    body: TranslateLocalRequest,
+    api_key: Optional[str] = Header(default=None, alias="X-Api-Key"),
+):
+    """
+    Tłumaczenie PL→EN przez lokalny model MarianMT (Helsinki-NLP/opus-mt-pl-en).
+    Dane nie opuszczają serwera — RODO-safe dla dokumentów medycznych.
+    Opcjonalnie anonimizuje tekst przed tłumaczeniem.
+    """
+    from ocr.translator import translate_pl_en
+
+    t_start = time.perf_counter()
+    text = body.text.strip()
+    if not text:
+        raise HTTPException(status_code=422, detail="Brak tekstu do tłumaczenia")
+
+    if body.anonymize_first:
+        text = anonymize(text)
+
+    try:
+        translated = translate_pl_en(text)
+    except Exception as exc:
+        logger.error("Local translate error: %s", exc, exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Błąd tłumaczenia: {exc}")
+
+    elapsed_ms = int((time.perf_counter() - t_start) * 1000)
+    logger.info("translate/local | chars=%d | time=%dms", len(text), elapsed_ms)
+
+    return {
+        "ok": True,
+        "original_text": body.text,
+        "anonymized_input": text if body.anonymize_first else None,
+        "translated_text": translated,
+        "source_language": "pl",
+        "target_language": "en",
+        "engine": "helsinki_nlp_local",
         "processing_time_ms": elapsed_ms,
     }

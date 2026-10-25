@@ -1,35 +1,140 @@
+from __future__ import annotations
+
 import io
 import logging
 import base64
 import os
+from typing import List
 from PIL import Image
 import pypdf
 
 logger = logging.getLogger(__name__)
 
-_rec_predictor = None
+OCR_ENGINE = os.environ.get("OCR_ENGINE", "claude")
+
+_paddle_ocr = None
+_lighton_model = None
+_lighton_processor = None
 
 
 def load_models():
-    logger.info("Claude vision OCR - no models to load")
+    global _paddle_ocr, _lighton_model, _lighton_processor
+    if OCR_ENGINE == "paddle":
+        try:
+            from paddleocr import PaddleOCR
+            _paddle_ocr = PaddleOCR(use_angle_cls=True, lang="en")
+            logger.info("PaddleOCR loaded")
+        except Exception as e:
+            logger.error("PaddleOCR load failed: %s", e)
+    elif OCR_ENGINE == "lighton":
+        try:
+            from transformers import AutoProcessor, AutoModelForImageTextToText
+            model_id = "lightonai/LightOnOCR-2-1B"
+            _lighton_processor = AutoProcessor.from_pretrained(model_id)
+            _lighton_model = AutoModelForImageTextToText.from_pretrained(model_id)
+            logger.info("LightOnOCR loaded")
+        except Exception as e:
+            logger.error("LightOnOCR load failed: %s", e)
+    else:
+        logger.info("Claude vision OCR - no models to load")
 
 
-def _pdf_to_images(data: bytes) -> list[Image.Image]:
+# ── Image preprocessing ───────────────────────────────────────────────────────
+
+def _preprocess(img: Image.Image) -> Image.Image:
+    """
+    Prepare image for PaddleOCR:
+    1. Resize to max 2000px on longest side (PaddleOCR slows on large images)
+    2. Invert if dark background (hospital photo scans)
+    3. CLAHE contrast enhancement on grayscale → back to RGB
+    4. Deskew using Hough lines via cv2
+    """
+    import cv2
+    import numpy as np
+
+    img = img.convert("RGB")
+
+    # 1. Resize
+    MAX_SIDE = 2000
+    w, h = img.size
+    if max(w, h) > MAX_SIDE:
+        scale = MAX_SIDE / max(w, h)
+        img = img.resize((int(w * scale), int(h * scale)), Image.LANCZOS)
+
+    arr = np.array(img)
+
+    # 2. Invert if dark background
+    gray = cv2.cvtColor(arr, cv2.COLOR_RGB2GRAY)
+    if float(np.median(gray)) < 100:
+        arr = cv2.bitwise_not(arr)
+        gray = cv2.cvtColor(arr, cv2.COLOR_RGB2GRAY)
+
+    # 3. CLAHE contrast on grayscale
+    clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+    enhanced = clahe.apply(gray)
+    arr = cv2.cvtColor(enhanced, cv2.COLOR_GRAY2RGB)
+
+    # 4. Deskew
+    arr = _deskew(arr)
+
+    return Image.fromarray(arr)
+
+
+def _deskew(arr):
+    """Straighten a skewed document image using Hough lines."""
+    import cv2
+    import numpy as np
+
+    gray = cv2.cvtColor(arr, cv2.COLOR_RGB2GRAY)
+    edges = cv2.Canny(gray, 50, 150, apertureSize=3)
+    lines = cv2.HoughLinesP(edges, 1, np.pi / 180, threshold=100,
+                             minLineLength=100, maxLineGap=10)
+    if lines is None or len(lines) < 5:
+        return arr
+
+    angles = []
+    for line in lines:
+        x1, y1, x2, y2 = line[0]
+        if x2 != x1:
+            angle = np.degrees(np.arctan2(y2 - y1, x2 - x1))
+            if abs(angle) < 30:  # ignore near-vertical lines
+                angles.append(angle)
+
+    if not angles:
+        return arr
+
+    median_angle = float(np.median(angles))
+    if abs(median_angle) < 0.5:
+        return arr  # no meaningful skew
+
+    h, w = arr.shape[:2]
+    center = (w // 2, h // 2)
+    M = cv2.getRotationMatrix2D(center, median_angle, 1.0)
+    rotated = cv2.warpAffine(arr, M, (w, h),
+                              flags=cv2.INTER_LINEAR,
+                              borderMode=cv2.BORDER_REPLICATE)
+    return rotated
+
+
+# ── PDF helpers ───────────────────────────────────────────────────────────────
+
+def _pdf_to_images(data: bytes) -> List[Image.Image]:
     try:
         from pdf2image import convert_from_bytes
+        # 200 dpi is enough for PaddleOCR; higher slows it down
         return convert_from_bytes(data, dpi=200)
     except Exception:
         reader = pypdf.PdfReader(io.BytesIO(data))
         return [Image.new("RGB", (2480, 3508), "white") for _ in reader.pages]
 
 
-def _load_image(data: bytes, content_type: str) -> list[Image.Image]:
+def _load_image(data: bytes, content_type: str) -> List[Image.Image]:
     if "pdf" in content_type:
         return _pdf_to_images(data)
     return [Image.open(io.BytesIO(data)).convert("RGB")]
 
 
-def _try_pdftotext(data: bytes) -> str | None:
+def _try_pdftotext(data: bytes):
     import subprocess
     try:
         result = subprocess.run(
@@ -51,18 +156,26 @@ def _image_to_base64(image: Image.Image) -> str:
     return base64.b64encode(buf.getvalue()).decode()
 
 
-def _claude_ocr_images(images: list[Image.Image]) -> str:
+# ── Claude ────────────────────────────────────────────────────────────────────
+
+def _claude_ocr_images(images: List[Image.Image]) -> str:
     import anthropic
     client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
     content = []
     for img in images[:4]:
         content.append({
             "type": "image",
-            "source": {"type": "base64", "media_type": "image/jpeg", "data": _image_to_base64(img)}
+            "source": {"type": "base64", "media_type": "image/jpeg",
+                       "data": _image_to_base64(img)}
         })
     content.append({
         "type": "text",
-        "text": "Extract ALL text from this medical document exactly as it appears. Preserve ALL line breaks, spacing, and column alignment. Each line in the document must be a separate line in output. Return only the raw extracted text, nothing else."
+        "text": (
+            "Extract ALL text from this medical document exactly as it appears. "
+            "Preserve ALL line breaks, spacing, and column alignment. "
+            "Each line in the document must be a separate line in output. "
+            "Return only the raw extracted text, nothing else."
+        )
     })
     response = client.messages.create(
         model="claude-haiku-4-5-20251001",
@@ -81,28 +194,88 @@ def _claude_ocr_pdf(data: bytes) -> str:
         max_tokens=4000,
         betas=["pdfs-2024-09-25"],
         messages=[{"role": "user", "content": [
-            {"type": "document", "source": {"type": "base64", "media_type": "application/pdf", "data": b64}},
-            {"type": "text", "text": "Extract ALL text from this medical document exactly as it appears. Preserve ALL line breaks, spacing, and column alignment. Each line in the document must be a separate line in output. Return only the raw extracted text, nothing else."}
+            {"type": "document",
+             "source": {"type": "base64", "media_type": "application/pdf", "data": b64}},
+            {"type": "text", "text": (
+                "Extract ALL text from this medical document exactly as it appears. "
+                "Preserve ALL line breaks, spacing, and column alignment. "
+                "Return only the raw extracted text, nothing else."
+            )}
         ]}]
     )
     return response.content[0].text
 
 
+# ── PaddleOCR ─────────────────────────────────────────────────────────────────
+
+def _paddle_ocr_images(images: List[Image.Image]) -> str:
+    global _paddle_ocr
+    if _paddle_ocr is None:
+        from paddleocr import PaddleOCR
+        _paddle_ocr = PaddleOCR(use_angle_cls=True, lang="en")
+
+    import numpy as np
+    pages = []
+    for img in images:
+        preprocessed = _preprocess(img)
+        arr = np.array(preprocessed)
+        page_lines = []
+        for res in _paddle_ocr.predict(arr):
+            texts = res.get("rec_texts", [])
+            page_lines.extend(t for t in texts if t and t.strip())
+        pages.append("\n".join(page_lines))
+
+    return "\n\n".join(p for p in pages if p.strip())
+
+
+# ── LightOnOCR ────────────────────────────────────────────────────────────────
+
+def _lighton_ocr_images(images: List[Image.Image]) -> str:
+    global _lighton_model, _lighton_processor
+    if _lighton_model is None:
+        from transformers import AutoProcessor, AutoModelForImageTextToText
+        model_id = "lightonai/LightOnOCR-2-1B"
+        _lighton_processor = AutoProcessor.from_pretrained(model_id)
+        _lighton_model = AutoModelForImageTextToText.from_pretrained(model_id)
+    import torch
+    pages = []
+    for img in images[:4]:
+        inputs = _lighton_processor(images=img, return_tensors="pt")
+        with torch.no_grad():
+            output = _lighton_model.generate(**inputs, max_new_tokens=2048)
+        text = _lighton_processor.decode(output[0], skip_special_tokens=True)
+        pages.append(text)
+    return "\n\n--- PAGE BREAK ---\n\n".join(pages)
+
+
+# ── Router ────────────────────────────────────────────────────────────────────
+
 def run_ocr_on_bytes(data: bytes, content_type: str) -> str:
+    # Text-layer PDF: pdftotext is always faster and more accurate
     if "pdf" in content_type:
         text = _try_pdftotext(data)
         if text:
             return text
+
+    if OCR_ENGINE == "paddle":
+        images = _load_image(data, content_type)
+        return _paddle_ocr_images(images)
+
+    if OCR_ENGINE == "lighton":
+        images = _load_image(data, content_type)
+        return _lighton_ocr_images(images)
+
+    # Default: Claude
+    if "pdf" in content_type:
         try:
             result = _claude_ocr_pdf(data)
             if result and len(result.strip()) > 100:
                 return result
         except Exception as e:
             logger.warning("Claude PDF beta failed: %s", e)
-        logger.info("Scanned PDF detected, using image OCR fallback")
+        logger.info("Scanned PDF — falling back to image OCR")
         images = _pdf_to_images(data)
         return _claude_ocr_images(images)
     else:
         images = _load_image(data, content_type)
         return _claude_ocr_images(images)
-

@@ -3,9 +3,13 @@ uvicorn[standard]==0.30.6
 python-multipart==0.0.9
 Pillow==10.4.0
 surya-ocr
-transformers==4.44.2
+transformers>=4.44.2
 torch
 torchvision
+sentencepiece
+sacremoses
+paddleocr>=2.9.0
+opencv-python-headless
 requests==2.32.3
 pydantic==2.8.2
 pydantic-settings==2.4.0
@@ -18,3 +22,5 @@ pdf2image==1.17.0
 pypdf==4.3.1
 python-dotenv==1.0.1
 httpx==0.27.2
+anthropic>=0.40.0
+bcrypt==4.2.0
