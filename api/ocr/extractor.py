@@ -67,6 +67,16 @@ _LAB_PATTERN = re.compile(
     re.IGNORECASE
 )
 
+# Alab/Synevo style: "Name (possibly long)   value unit   lo — hi"
+# value+unit together, range last, em-dash or regular dash in range
+# Name may contain digits (e.g. "FT3", "CA 125"), parens, slashes
+_ALAB_PATTERN = re.compile(
+    r'^[ \t]*\*?[ \t]*([A-ZŻŹĆĄŚĘŁÓŃ][A-Za-ząęółśżźćńĄĘÓŁŚŻŹĆŃ][A-Za-ząęółśżźćńĄĘÓŁŚŻŹĆŃ \d\(\)/\-\.]{3,65}?)'
+    r'[ \t]{3,}([\d,\.]+)[ \t]+([a-zA-Z/%\xb5][a-zA-Z/%\xb5\d\.\*]*(?:/[a-zA-Z\d]+)?)'
+    r'[ \t]{2,}([\d,\.]+ ?[—–\-] ?[\d,\.]+|< ?[\d,\.]+)',
+    re.MULTILINE
+)
+
 # Generic row pattern as fallback
 _GENERIC_PATTERN = re.compile(
     r'^([ \t]*[A-ZŻŹĆĄŚĘŁÓŃ][A-Za-ząęółśżźćńĄĘÓŁŚŻŹĆŃ][A-Za-ząęółśżźćńĄĘÓŁŚŻŹĆŃ\s\(\)/\-]{1,38}?)\s+'
@@ -79,14 +89,104 @@ _GENERIC_PATTERN = re.compile(
 _SKIP_NAMES = frozenset([
     'data', 'pesel', 'wiek', 'kod', 'data ur', 'nr', 'nip', 'tel', 'fax',
     'adres', 'lekarz', 'pacjent', 'gabinet', 'pieczatka', 'podpis',
+    'sprawozdanie', 'nazwa bad', 'wynik badania', 'zakres', 'j. miary',
+    'powyżej', 'poniżej', 'wartościreferencyjne', 'uwagi', 'interpret',
 ])
+
+# Units that are definitely not medical (Polish city names, etc.)
+_UNIT_BLACKLIST = frozenset([
+    'bydgoszcz', 'warszawa', 'toruń', 'kraków', 'gdańsk', 'poznań',
+    'wrocław', 'łódź', 'lublin', 'katowice', 'torun', 'lat', 'lata', 'roku',
+])
+
+_VALID_UNIT = re.compile(
+    r'^([a-zA-Z]{1,6}(/[a-zA-Z]{1,4})?|[µ%][a-zA-Z]{0,4}|[a-zA-Z]{1,4}\d?)$'
+)
+
+# Lab names (lowercase) used for multi-line Syntetyk detection
+_LAB_NAMES_LOWER = frozenset(n.lower() for n in _LAB_NAMES)
+
+_RE_VALUE = re.compile(r'^[\d,\.]+$')
+_RE_RANGE = re.compile(r'^[\d,\.]+ ?[—–\-] ?[\d,\.]+$')
+_RE_UNIT = re.compile(r'^[a-zA-Z/%µ][a-zA-Z/%µ\d\.\*/]*$')
+_RE_FLAG = re.compile(r'^[LHlh⇑⇓↑↓]')
 
 
 def _clean_name(name: str) -> str:
     return name.replace('\n', ' ').strip().rstrip('.:')
 
 
+def _parse_multiline_table(text: str, add_fn) -> None:
+    """
+    Syntetyk/Rydgier format: each column on a separate line.
+      Glukoza        <- name (may span 2 lines, e.g. "Cholesterol\ncalkowity")
+      105            <- value (pure number)
+      70 - 99        <- range
+      mg/dL          <- unit
+      ⇑ (optional)  <- flag
+    Triggered only when we see a header row "Wynik" / "Zakres ref." / "J. miary".
+    """
+    if not re.search(r'Zakres ref\.|J\. miary|Nazwa bad\.', text, re.IGNORECASE):
+        return
+
+    lines = [l.strip() for l in text.split('\n')]
+    # State machine: collect (name, value, range, unit, flag) tuples
+    # A "name" line = known lab name OR a capitalised word that is NOT a number/unit/range
+    i = 0
+    while i < len(lines):
+        line = lines[i]
+        # Check if this line IS a known lab name
+        if line.lower() in _LAB_NAMES_LOWER or (
+            re.match(r'^[A-ZŻŹĆĄŚĘŁÓŃ][A-Za-ząęółśżźćńĄĘÓŁŚŻŹĆŃ]', line)
+            and not _RE_VALUE.match(line)
+            and not _RE_RANGE.match(line)
+            and not _RE_UNIT.match(line)
+            and len(line) >= 3
+            and len(line) <= 40
+        ):
+            name_parts = [line]
+            j = i + 1
+            # Consume optional name continuation (lowercase or mixed continuation, not a number)
+            if j < len(lines):
+                nxt = lines[j]
+                if (nxt and not _RE_VALUE.match(nxt) and not _RE_RANGE.match(nxt)
+                        and not _RE_UNIT.match(nxt) and len(nxt) <= 30
+                        and re.match(r'^[a-ząęółśżźćńA-Z]', nxt)):
+                    name_parts.append(nxt)
+                    j += 1
+            # Next must be a value
+            if j < len(lines) and _RE_VALUE.match(lines[j]):
+                value = lines[j]; j += 1
+                rng = ""
+                unit = ""
+                flag = ""
+                if j < len(lines) and _RE_RANGE.match(lines[j]):
+                    rng = lines[j].replace(' ', ''); j += 1
+                if j < len(lines) and _RE_UNIT.match(lines[j]):
+                    unit = lines[j]; j += 1
+                if j < len(lines) and _RE_FLAG.match(lines[j]):
+                    f = lines[j][0]; j += 1
+                    flag = f if f in ('H', 'h', 'L', 'l', '⇑', '⇓', '↑', '↓') else ""
+                name = ' '.join(name_parts)
+                add_fn(name, value, unit, rng, flag)
+                i = j
+                continue
+        i += 1
+
+
+_NOISE_LINES = re.compile(
+    r'(?:WARTOŚCI\s*REFERENCYJNE|Wartości\s*ref\.?|WYNIKI REFERENCYJNE'
+    r'|BADANIE\s+WYNIK|NAZWA\s+BAD|J\.\s*MIARY|WYNIK\s+BADANIA)',
+    re.IGNORECASE
+)
+
+
 def _extract_results(text: str) -> List[Dict[str, Any]]:
+    # Strip lines that start with known noise (reference-range headers, duplicates)
+    text = '\n'.join(
+        '' if _NOISE_LINES.match(ln.lstrip()) else ln
+        for ln in text.split('\n')
+    )
     results: List[Dict[str, Any]] = []
     seen: set = set()
 
@@ -94,6 +194,17 @@ def _extract_results(text: str) -> List[Dict[str, Any]]:
         name = _clean_name(name)
         key = name.lower()
         if len(name) < 3 or key in _SKIP_NAMES or key in seen:
+            return
+        # Skip names where first word is all-caps (column headers, noise)
+        first_word = name.split()[0] if name.split() else ''
+        if first_word.isupper() and len(first_word) > 3:
+            return
+        # Convert single-char H/L unit to flag (hospital tables with no explicit unit)
+        if unit and unit.strip().upper() in ('H', 'L') and not flag:
+            flag = unit.strip().upper()
+            unit = ""
+        # Skip truly garbage units (single non-flag letter)
+        elif unit and len(unit.strip()) == 1 and unit.strip().upper() not in ('H', 'L', '%'):
             return
         seen.add(key)
         # Normalize Unicode arrows/symbols to ASCII flags
@@ -111,8 +222,7 @@ def _extract_results(text: str) -> List[Dict[str, Any]]:
             "flag": flag_norm,
         })
 
-    # Polish hospital table format:
-    # "Nazwa bad.   Wynik   Zakres ref.   J. miary   Uwagi"
+    # ── 1. Polish hospital table (Szpital Powiatowy): one row per line
     # "Glukoza      105     70 - 99       mg/dL       ⇑"
     _TABLE_ROW = re.compile(
         r'^[ \t]*([A-ZŻŹĆĄŚĘŁÓŃ][A-Za-ząęółśżźćńĄĘÓŁŚŻŹĆŃ][A-Za-ząęółśżźćńĄĘÓŁŚŻŹĆŃ\s\(\)/\-]{0,38}?)'
@@ -122,25 +232,53 @@ def _extract_results(text: str) -> List[Dict[str, Any]]:
         r'[ \t]*(⇑|⇓|↑|↓|[LHlh&])?',
         re.MULTILINE
     )
-
     for m in _TABLE_ROW.finditer(text):
         flag_raw = (m.group(5) or '').strip()
         _add(m.group(1), m.group(2), m.group(4), m.group(3).replace(' ', ''), flag_raw)
 
-    # Specific named-test patterns
+    # ── 2. Alab/Synevo inline: "Name (long)   value unit   range"
+    for m in _ALAB_PATTERN.finditer(text):
+        name = _clean_name(m.group(1))
+        # strip leading asterisk/star markers
+        name = name.lstrip('* ').strip()
+        _add(name, m.group(2), m.group(3), m.group(4), "")
+
+    # ── 3. Syntetyk multi-line: each column on its own line
+    _parse_multiline_table(text, _add)
+
+    # ── 4. Specific named-test patterns
     for m in _LAB_PATTERN.finditer(text):
         _add(m.group(1), m.group(2), m.group(3), m.group(4), m.group(5) or "")
 
-    # Generic fallback for remaining lines
+    # ── 5. Generic fallback for remaining lines
     for m in _GENERIC_PATTERN.finditer(text):
         name = _clean_name(m.group(1))
-        if name.lower() not in seen:
+        key = name.lower()
+        unit = m.group(3).lower() if m.group(3) else ""
+        # Skip city fragments or non-medical units
+        if any(city in key for city in ('bydgoszcz', 'warszawa', 'toruń', 'kraków',
+                                         'gdańsk', 'poznań', 'wrocław', 'łódź')):
+            continue
+        if unit in _UNIT_BLACKLIST:
+            continue
+        if key not in seen:
             _add(name, m.group(2), m.group(3), m.group(4), m.group(5) or "")
 
     return results
 
 
 # ── Medications ───────────────────────────────────────────────────────────────
+
+_MED_FALSE_POSITIVES = frozenset(
+    n.lower() for n in _LAB_NAMES
+) | frozenset([
+    'triglicerydy', 'trójglicerydy', 'glukoza', 'kreatynina', 'hemoglobina',
+    'cholesterol', 'bilirubina', 'ferrytyna', 'witamina', 'leukocyty',
+    'erytrocyty', 'trombocyty', 'neutrofile', 'limfocyty', 'monocyty',
+    # street/city fragments
+    'nadolska', 'królewska', 'jadwigi', 'grudziądzka', 'stępińska',
+])
+
 
 def _extract_medications(text: str) -> List[Dict[str, Any]]:
     meds = []
@@ -154,7 +292,7 @@ def _extract_medications(text: str) -> List[Dict[str, Any]]:
     for m in pattern.finditer(text):
         name = m.group(1).strip()
         key = name.lower()
-        if key in seen or len(name) < 4:
+        if key in seen or len(name) < 4 or key in _MED_FALSE_POSITIVES:
             continue
         seen.add(key)
         meds.append({
