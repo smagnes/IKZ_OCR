@@ -1,0 +1,84 @@
+version: '3.9'
+
+# Lokalne testy OCR — bez prywatnego registry
+# Uruchom: docker compose -f docker-compose.local.yml up --build
+# Zmień silnik: OCR_ENGINE=paddle docker compose -f docker-compose.local.yml up --build ocr-api
+
+services:
+
+  ocr-api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile.test
+    image: ikzocr-test:latest
+    container_name: ikzocr_test_api
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://medyk:medyk@postgres:5432/medykocr
+      - REDIS_URL=redis://redis:6379
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - JWT_SECRET=test_secret_local
+      - PRELOAD_MODELS=true
+      - OCR_ENGINE=${OCR_ENGINE:-claude}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ocr_models:/root/.cache/huggingface
+      - ocr_models:/root/.paddleocr
+    networks:
+      - medyk_net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: ikzocr_test_postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=medyk
+      - POSTGRES_PASSWORD=medyk
+      - POSTGRES_DB=medykocr
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports:
+      - "5432:5432"
+    networks:
+      - medyk_net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U medyk -d medykocr"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: ikzocr_test_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    networks:
+      - medyk_net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
+  ocr_models:
+
+networks:
+  medyk_net:
+    driver: bridge
