@@ -1,11 +1,15 @@
-import { getToken, setAuth, AuthUser } from './auth'
+import { getToken, setAuth, AuthUser, DEMO_API_KEY, isDemo } from './auth'
 
 const BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000'
 const DEMO_KEY = process.env.NEXT_PUBLIC_API_KEY ?? 'mk_prod_demo123'
 
 function apiKeyHeaders(extra: Record<string, string> = {}) {
-  const key = (typeof window !== 'undefined' && localStorage.getItem('ikzocr_api_key')) || DEMO_KEY
-  return { Authorization: `Bearer ${key}`, ...extra }
+  let key: string | null = null
+  if (typeof window !== 'undefined') {
+    // Sesja demo zawsze używa własnego, izolowanego klucza
+    key = isDemo() ? localStorage.getItem(DEMO_API_KEY) : localStorage.getItem('ikzocr_api_key')
+  }
+  return { Authorization: `Bearer ${key || DEMO_KEY}`, ...extra }
 }
 
 function jwtHeaders(extra: Record<string, string> = {}) {
@@ -28,6 +32,24 @@ export async function login(email: string, password: string): Promise<{ token: s
   const data = await res.json()
   setAuth(data.token, data.user)
   return data
+}
+
+// Nowa, izolowana sesja demo: osobne konto i klucz API, ważne 24 h
+export async function startDemo(): Promise<{ token: string; user: AuthUser }> {
+  const res = await fetch(`${BASE}/auth/demo`, { method: 'POST' })
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: 'Nie udało się uruchomić demo' }))
+    throw new Error(err.detail ?? 'Nie udało się uruchomić demo')
+  }
+  const data = await res.json()
+  localStorage.setItem(DEMO_API_KEY, data.api_key)
+  setAuth(data.token, { ...data.user, is_demo: true })
+  return data
+}
+
+// Kończy sesję demo i od razu usuwa jej dokumenty z serwera
+export async function endDemo(): Promise<void> {
+  await fetch(`${BASE}/auth/demo/end`, { method: 'POST', headers: jwtHeaders() }).catch(() => {})
 }
 
 export async function register(name: string, email: string, password: string, facility_name?: string) {
@@ -59,7 +81,8 @@ export async function fetchMe() {
 export async function scanDocument(file: File, silosId?: string): Promise<ScanResult> {
   const form = new FormData()
   form.append('file', file)
-  const h = apiKeyHeaders(silosId ? { 'X-IKZ-Silos-Id': silosId } : {})
+  // W demo wysyłka do IKZ Mobile jest wyłączona
+  const h = apiKeyHeaders(silosId && !isDemo() ? { 'X-IKZ-Silos-Id': silosId } : {})
   const res = await fetch(`${BASE}/v1/scan`, { method: 'POST', headers: h, body: form })
   if (!res.ok) throw new Error(await res.text())
   return res.json()
@@ -162,6 +185,7 @@ export async function setWebhookUrl(keyId: string, webhookUrl: string) {
 }
 
 export async function sendScanEmail(scanId: string, to: string) {
+  if (isDemo()) throw new Error('Wysyłka email jest niedostępna w wersji demo')
   const res = await fetch(`${BASE}/v1/documents/send-email`, {
     method: 'POST',
     headers: { ...apiKeyHeaders(), 'Content-Type': 'application/json' },

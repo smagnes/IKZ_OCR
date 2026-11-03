@@ -2,25 +2,29 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { login } from '@/lib/api'
-import { setAuth } from '@/lib/auth'
+import { login, startDemo } from '@/lib/api'
 
 export default function LoginPage() {
   const router = useRouter()
   const [form, setForm] = useState({ email: '', password: '' })
   const [loading, setLoading] = useState(false)
 
-  const demoLogin = () => {
-    const header = btoa(JSON.stringify({ alg: 'HS256', typ: 'JWT' })).replace(/=/g, '')
-    const payload = btoa(JSON.stringify({
-      sub: 'demo', email: 'demo@ikzocr.pl', name: 'Demo User',
-      exp: Math.floor(Date.now() / 1000) + 86400 * 30,
-    })).replace(/=/g, '')
-    const fakeJwt = `${header}.${payload}.demo`
-    setAuth(fakeJwt, { id: 'demo', name: 'Demo User', email: 'demo@ikzocr.pl', plan: 'pro', scans_limit: 500, scans_this_month: 12 })
-    router.push('/scan')
-  }
+  const [demoLoading, setDemoLoading] = useState(false)
   const [error, setError] = useState('')
+
+  // Każde kliknięcie tworzy osobne, tymczasowe konto demo (24 h, 10 skanów)
+  const demoLogin = async () => {
+    setError('')
+    setDemoLoading(true)
+    try {
+      await startDemo()
+      router.push('/scan')
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Nie udało się uruchomić demo')
+    } finally {
+      setDemoLoading(false)
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -111,9 +115,10 @@ export default function LoginPage() {
           <button
             type="button"
             onClick={demoLogin}
+            disabled={demoLoading}
             className="w-full py-2.5 rounded-xl text-sm font-semibold transition-all hover:opacity-90 border"
             style={{ background: '#F5F8F6', color: '#007A57', borderColor: '#B3EDD8' }}>
-            Try Demo (no login required)
+            {demoLoading ? 'Ładowanie...' : 'Wypróbuj demo (bez rejestracji)'}
           </button>
         </div>
 

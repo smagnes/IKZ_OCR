@@ -1,3 +1,4 @@
+import asyncio
 import time
 import uuid
 import logging
@@ -6,7 +7,7 @@ from contextlib import asynccontextmanager
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 
-from fastapi import FastAPI, File, UploadFile, HTTPException, Depends, Header, Query
+from fastapi import FastAPI, File, UploadFile, HTTPException, Depends, Header, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 import csv
 import io
@@ -29,6 +30,7 @@ from ocr.parser import parse_document
 from ocr.anonymizer import anonymize
 from ocr.extractor import extract_structured
 import db
+from demo import RateLimiter, client_ip
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 logger = logging.getLogger(__name__)
@@ -61,6 +63,17 @@ class Settings(BaseSettings):
     smtp_user: str = ""
     smtp_pass: str = ""
     email_from: str = "noreply@ikzocr.pl"
+    # Demo: każdy gość dostaje osobne, tymczasowe konto
+    demo_ttl_hours: int = 24
+    demo_scans_limit: int = 10
+    demo_sessions_per_ip_per_hour: int = 5
+    demo_scans_per_ip_per_hour: int = 20
+    demo_requests_per_ip_per_minute: int = 60
+    demo_cleanup_interval_s: int = 900
+    # API stoi za reverse proxy (nginx) — IP klienta z X-Forwarded-For
+    trust_proxy_headers: bool = True
+    # Stare wspólne konto demo — logowanie hasłem zablokowane
+    blocked_login_emails: str = "demo@ikzocr.pl"
 
     class Config:
         env_file = ".env"
@@ -74,25 +87,51 @@ JWT_ALGO = "HS256"
 JWT_EXPIRE = timedelta(days=7)
 
 
-def create_token(user_id: str, email: str, name: str) -> str:
+def create_token(user_id: str, email: str, name: str,
+                 expires_at: Optional[datetime] = None, demo: bool = False) -> str:
     payload = {
         "sub": str(user_id),
         "email": email,
         "name": name,
-        "exp": datetime.now(timezone.utc) + JWT_EXPIRE,
+        "exp": expires_at or (datetime.now(timezone.utc) + JWT_EXPIRE),
     }
+    if demo:
+        payload["demo"] = True
     return jwt.encode(payload, settings.jwt_secret, algorithm=JWT_ALGO)
 
 
-async def verify_jwt_user(authorization: str = Header(...)) -> dict:
+# Limitery demo (w pamięci procesu; API działa na jednym workerze)
+demo_session_limiter = RateLimiter(settings.demo_sessions_per_ip_per_hour, 3600)
+demo_scan_limiter = RateLimiter(settings.demo_scans_per_ip_per_hour, 3600)
+demo_request_limiter = RateLimiter(settings.demo_requests_per_ip_per_minute, 60)
+
+DEMO_FORBIDDEN = "Funkcja niedostępna w wersji demo"
+
+
+def _ip(request: Request) -> str:
+    return client_ip(request, settings.trust_proxy_headers)
+
+
+async def verify_jwt_user(request: Request, authorization: str = Header(...)) -> dict:
     if not authorization.startswith("Bearer "):
         raise HTTPException(status_code=401, detail="Brakuje tokenu Bearer")
     token = authorization.removeprefix("Bearer ").strip()
     try:
         payload = jwt.decode(token, settings.jwt_secret, algorithms=[JWT_ALGO])
-        return payload
     except JWTError:
         raise HTTPException(status_code=401, detail="Nieprawidłowy lub wygasły token")
+    if payload.get("demo"):
+        demo_request_limiter.check(_ip(request), "Zbyt wiele zapytań w wersji demo. Spróbuj za chwilę.")
+    return payload
+
+
+async def _demo_cleanup_loop():
+    while True:
+        await asyncio.sleep(settings.demo_cleanup_interval_s)
+        try:
+            await db.purge_expired_demo()
+        except Exception as exc:
+            logger.error("Demo cleanup error: %s", exc, exc_info=True)
 
 
 @asynccontextmanager
@@ -100,9 +139,12 @@ async def lifespan(app: FastAPI):
     await db.init_pool(settings.database_url)
     await db.ensure_schema()
     await db.seed_demo_keys()
+    await db.purge_expired_demo()
+    cleanup_task = asyncio.create_task(_demo_cleanup_loop())
     if settings.preload_models:
         load_models()
     yield
+    cleanup_task.cancel()
     await db.close_pool()
 
 
@@ -122,19 +164,31 @@ app.add_middleware(
 )
 
 
-async def verify_api_key(authorization: str = Header(...)) -> dict:
+async def verify_api_key(request: Request, authorization: str = Header(...)) -> dict:
     if not authorization.startswith("Bearer "):
         raise HTTPException(status_code=401, detail="Brakuje tokenu Bearer")
     raw = authorization.removeprefix("Bearer ").strip()
     record = await db.get_api_key_record(raw)
     if not record:
-        raise HTTPException(status_code=403, detail="Nieprawidłowy klucz API")
+        raise HTTPException(status_code=403, detail="Nieprawidłowy lub wygasły klucz API")
+    if record.get("is_demo"):
+        demo_request_limiter.check(_ip(request), "Zbyt wiele zapytań w wersji demo. Spróbuj za chwilę.")
     return record
+
+
+def forbid_demo(key_record: dict) -> None:
+    if key_record.get("is_demo"):
+        raise HTTPException(status_code=403, detail=DEMO_FORBIDDEN)
 
 
 async def verify_scan_quota(key_record: dict = Depends(verify_api_key)) -> dict:
     used = key_record["scans_this_month"]
     limit = key_record["scans_limit"]
+    if used >= limit and key_record.get("is_demo"):
+        raise HTTPException(
+            status_code=429,
+            detail=f"Wykorzystano limit {limit} skanów w wersji demo. Załóż konto, aby skanować dalej.",
+        )
     if used >= limit:
         raise HTTPException(
             status_code=429,
@@ -193,8 +247,49 @@ async def register(body: RegisterBody):
     }
 
 
+@app.post("/auth/demo", summary="Nowa, izolowana sesja demo")
+async def start_demo(request: Request):
+    """Tworzy tymczasowe konto i klucz API tylko dla tego gościa.
+    Po `demo_ttl_hours` konto i wszystkie jego dokumenty są usuwane."""
+    demo_session_limiter.check(
+        _ip(request), "Limit nowych sesji demo z tego adresu został wyczerpany. Spróbuj za godzinę."
+    )
+    user, key = await db.create_demo_account(settings.demo_ttl_hours, settings.demo_scans_limit)
+    expires_at = user["expires_at"]
+    token = create_token(str(user["id"]), user["email"], user["name"], expires_at=expires_at, demo=True)
+    logger.info("Nowa sesja demo %s (wygasa %s)", user["id"], expires_at.isoformat())
+    return {
+        "token": token,
+        "api_key": key["raw_key"],
+        "user": {
+            "id": str(user["id"]),
+            "name": user["name"],
+            "email": user["email"],
+            "plan": key["plan"],
+            "scans_limit": key["scans_limit"],
+            "scans_this_month": 0,
+            "is_demo": True,
+            "expires_at": expires_at.isoformat(),
+        },
+    }
+
+
+@app.post("/auth/demo/end", summary="Zakończ sesję demo i usuń jej dane")
+async def end_demo(jwt_user: dict = Depends(verify_jwt_user)):
+    if not jwt_user.get("demo"):
+        raise HTTPException(status_code=400, detail="To nie jest sesja demo")
+    result = await db.delete_demo_account(jwt_user["sub"])
+    return {"deleted": True, **result}
+
+
 @app.post("/auth/login", summary="Logowanie")
 async def login(body: LoginBody):
+    blocked = {e.strip().lower() for e in settings.blocked_login_emails.split(",") if e.strip()}
+    if body.email.lower() in blocked:
+        raise HTTPException(
+            status_code=403,
+            detail="Wspólne konto demo zostało wyłączone. Użyj przycisku „Wypróbuj demo”.",
+        )
     user = await db.get_user_by_email(body.email.lower())
     if not user or not _verify_pw(body.password, user["password_hash"]):
         raise HTTPException(status_code=401, detail="Błędny email lub hasło")
@@ -232,6 +327,8 @@ async def me(jwt_user: dict = Depends(verify_jwt_user)):
         "scans_limit": key_data["scans_limit"] if key_data else 200,
         "scans_this_month": key_data["scans_this_month"] if key_data else 0,
         "created_at": str(user["created_at"].date()),
+        "is_demo": bool(user.get("is_demo")),
+        "expires_at": user["expires_at"].isoformat() if user.get("expires_at") else None,
     }
 
 
@@ -246,6 +343,7 @@ async def health():
 
 @app.post("/v1/scan", response_model=ScanResponse, summary="Skanuj dokument medyczny")
 async def scan_document(
+    request: Request,
     file: UploadFile = File(...),
     background_tasks: BackgroundTasks = BackgroundTasks(),
     key_record: dict = Depends(verify_scan_quota),
@@ -261,6 +359,11 @@ async def scan_document(
     data = await file.read()
     if len(data) > MAX_SIZE_MB * 1024 * 1024:
         raise HTTPException(status_code=413, detail=f"Plik zbyt duży (maks. {MAX_SIZE_MB} MB)")
+
+    if key_record.get("is_demo"):
+        if x_ikz_silos_id:
+            raise HTTPException(status_code=403, detail="Wysyłka do IKZ Mobile jest niedostępna w wersji demo")
+        demo_scan_limiter.check(_ip(request), "Limit skanów demo z tego adresu został wyczerpany. Spróbuj za godzinę.")
 
     scan_id = str(uuid.uuid4())
     t_start = time.perf_counter()
@@ -331,7 +434,7 @@ async def scan_document(
         ikz_examination_id=ikz_examination_id,
     )
 
-    if key_record.get("webhook_url"):
+    if key_record.get("webhook_url") and not key_record.get("is_demo"):
         background_tasks.add_task(send_webhook, key_record["webhook_url"], response.model_dump(mode="json"))
 
     return response
@@ -552,6 +655,7 @@ async def delete_document(scan_id: str, key_record: dict = Depends(verify_api_ke
 
 @app.post("/v1/api-keys", response_model=ApiKeyResponse, summary="Utwórz klucz API dla placówki")
 async def create_api_key(body: ApiKeyCreate, key_record: dict = Depends(verify_api_key)):
+    forbid_demo(key_record)
     if key_record["plan"] not in ("pro", "enterprise", "demo"):
         raise HTTPException(status_code=403, detail="Tworzenie kluczy wymaga planu Pro lub wyższego")
     result = await db.create_api_key(body.name, body.facility_name, "starter")
@@ -573,6 +677,7 @@ class WebhookBody(BaseModel):
 
 @app.patch("/v1/api-keys/{key_id}/webhook", summary="Ustaw URL webhooka dla klucza")
 async def update_webhook(key_id: str, body: WebhookBody, key_record: dict = Depends(verify_api_key)):
+    forbid_demo(key_record)
     await db.set_webhook_url(key_id, body.webhook_url or None)
     return {"ok": True, "webhook_url": body.webhook_url}
 
@@ -584,6 +689,7 @@ class SendEmailBody(BaseModel):
 
 @app.post("/v1/documents/send-email", summary="Wyślij wynik skanu na email")
 async def send_scan_email(body: SendEmailBody, key_record: dict = Depends(verify_api_key)):
+    forbid_demo(key_record)
     if not settings.smtp_host:
         raise HTTPException(status_code=503, detail="Email nie jest skonfigurowany. Dodaj SMTP_HOST do .env")
     doc = await db.get_scan_by_id(body.scan_id, str(key_record["id"]))
@@ -621,7 +727,7 @@ async def send_scan_email(body: SendEmailBody, key_record: dict = Depends(verify
 
 @app.get("/v1/api-keys", summary="Lista kluczy API")
 async def list_api_keys(key_record: dict = Depends(verify_api_key)):
-    keys = await db.list_api_keys()
+    keys = await db.list_api_keys(str(key_record["id"]) if key_record.get("is_demo") else None)
     return {"keys": [
         {
             "key_id": str(k["id"]),
@@ -654,6 +760,7 @@ class TranslateResponse(BaseModel):
 
 @app.post("/translate", summary="Translate medical document to English")
 async def translate_document(
+    request: Request,
     file: UploadFile = File(...),
     current_user: dict = Depends(verify_jwt_user),
 ):
@@ -663,6 +770,9 @@ async def translate_document(
     data = await file.read()
     if len(data) > MAX_SIZE_MB * 1024 * 1024:
         raise HTTPException(status_code=413, detail=f"File too large (max {MAX_SIZE_MB} MB)")
+
+    if current_user.get("demo"):
+        demo_scan_limiter.check(_ip(request), "Limit skanów demo z tego adresu został wyczerpany. Spróbuj za godzinę.")
 
     t_start = time.perf_counter()
 

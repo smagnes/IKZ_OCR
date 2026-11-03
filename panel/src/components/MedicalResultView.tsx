@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import clsx from 'clsx'
 import { ScanResult, sendScanEmail } from '@/lib/api'
+import { isDemo } from '@/lib/auth'
 
 const ALERT_LABELS: Record<string, string> = {
   anemia: 'Anemia',
@@ -107,7 +108,9 @@ export default function MedicalResultView({ result }: { result: ScanResult }) {
             {copied ? '✓ Skopiowano' : 'Kopiuj'}
           </button>
           <button onClick={() => setEmailModal(true)}
-            className="text-xs px-3 py-1.5 rounded-lg border bg-white font-medium hover:bg-blue-50"
+            disabled={isDemo()}
+            title={isDemo() ? 'Wysyłka email jest niedostępna w wersji demo' : undefined}
+            className="text-xs px-3 py-1.5 rounded-lg border bg-white font-medium hover:bg-blue-50 disabled:opacity-40 disabled:cursor-not-allowed"
             style={{ borderColor: '#B3EDD8', color: '#94A3B8' }}>
             Wyślij email
           </button>

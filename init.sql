@@ -34,6 +34,7 @@ CREATE TABLE IF NOT EXISTS api_keys (
     is_active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
+-- user_id, webhook_url, is_demo, expires_at dodaje db.ensure_schema() przy starcie API
 
 CREATE TABLE IF NOT EXISTS facilities (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -50,7 +51,10 @@ CREATE TABLE IF NOT EXISTS users (
     name TEXT NOT NULL,
     email TEXT UNIQUE NOT NULL,
     password_hash TEXT NOT NULL,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    -- Tymczasowe konta demo: usuwane wraz z dokumentami po expires_at
+    is_demo BOOLEAN NOT NULL DEFAULT false,
+    expires_at TIMESTAMPTZ
 );
 
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);

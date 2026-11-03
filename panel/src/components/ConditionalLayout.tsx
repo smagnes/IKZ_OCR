@@ -2,7 +2,8 @@
 import { useEffect, useState } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import Sidebar from './Sidebar'
-import { isAuthenticated } from '@/lib/auth'
+import { isAuthenticated, isDemo } from '@/lib/auth'
+import DemoBanner from './DemoBanner'
 
 const AUTH_ROUTES = ['/login', '/register']
 
@@ -41,6 +42,7 @@ export default function ConditionalLayout({ children }: { children: React.ReactN
     <div className="flex h-screen overflow-hidden" style={{ background: '#F5F8F6' }}>
       <Sidebar />
       <main className="flex-1 overflow-hidden flex flex-col pt-12 md:pt-0">
+        {isDemo() && <DemoBanner />}
         {children}
       </main>
     </div>

@@ -1,6 +1,7 @@
 'use client'
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { scanDocument, sendScanEmail, ScanResult } from '@/lib/api'
+import { isDemo } from '@/lib/auth'
 import clsx from 'clsx'
 
 const ALERT_LABELS: Record<string, string> = {
@@ -82,11 +83,19 @@ export default function ScanPage() {
           <p className="text-[11px] text-slate-400">Upload a medical document — AI identifies type and data</p>
         </div>
         <div className="flex items-center gap-3">
+          {isDemo() ? (
+            <div className="text-xs px-3 py-1.5 rounded-full border font-medium"
+                 style={{ background: '#F1F5F9', color: '#94A3B8', borderColor: '#E2E8F0' }}
+                 title="Wysyłka do IKZ Mobile jest wyłączona w wersji demo">
+              IKZ Mobile — wyłączone w demo
+            </div>
+          ) : (
           <div className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full border font-medium"
                style={{ background: '#D6F5EC', color: '#007A57', borderColor: '#B3EDD8' }}>
             <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: '#00B37E' }} />
             IKZ Mobile connected
           </div>
+          )}
           <button onClick={runAll}
             className="text-white text-xs px-4 py-2 rounded-xl font-semibold transition-all hover:shadow-lg hover:-translate-y-px"
             style={{ background: 'linear-gradient(135deg, #00E5A0, #00B37E)' }}>
@@ -310,7 +319,9 @@ function ResultView({ result, file }: { result: ScanResult; file: File }) {
             {copied ? '✓ Copied' : 'Copy'}
           </button>
           <button onClick={() => setEmailModal(true)}
-            className="text-xs px-3 py-1.5 rounded-lg border bg-white transition-colors font-medium hover:bg-blue-50"
+            disabled={isDemo()}
+            title={isDemo() ? 'Wysyłka email jest niedostępna w wersji demo' : undefined}
+            className="text-xs px-3 py-1.5 rounded-lg border bg-white transition-colors font-medium hover:bg-blue-50 disabled:opacity-40 disabled:cursor-not-allowed"
             style={{ borderColor: '#B3EDD8', color: '#94A3B8' }}>
             Send by email
           </button>

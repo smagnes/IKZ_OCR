@@ -45,11 +45,13 @@ async def get_api_key_record(raw_key: str) -> Optional[dict]:
     row = await get_pool().fetchrow(
         """
         SELECT id, key_prefix, name, facility_name, plan, scans_limit, is_active, webhook_url,
+               user_id, is_demo, expires_at,
                (SELECT COUNT(*) FROM scans
                 WHERE api_key_id = api_keys.id::text
-                  AND created_at >= date_trunc('month', NOW())) AS scans_this_month
+                  AND (api_keys.is_demo OR created_at >= date_trunc('month', NOW()))) AS scans_this_month
         FROM api_keys
         WHERE key_hash = $1 AND is_active = true
+          AND (expires_at IS NULL OR expires_at > NOW())
         """,
         _hash_key(raw_key),
     )
@@ -80,16 +82,21 @@ async def set_webhook_url(key_id: str, webhook_url: Optional[str]) -> None:
     )
 
 
-async def list_api_keys() -> list[dict]:
+async def list_api_keys(only_key_id: Optional[str] = None) -> list[dict]:
+    """Lista kluczy. Z `only_key_id` zwraca tylko ten jeden klucz (sesje demo)."""
+    where = "WHERE id = $1::uuid" if only_key_id else "WHERE COALESCE(is_demo, false) = false"
+    params = [only_key_id] if only_key_id else []
     rows = await get_pool().fetch(
-        """
+        f"""
         SELECT id, key_prefix, name, facility_name, plan, scans_limit, is_active, webhook_url, created_at,
                (SELECT COUNT(*) FROM scans
                 WHERE api_key_id = api_keys.id::text
                   AND created_at >= date_trunc('month', NOW())) AS scans_this_month
         FROM api_keys
+        {where}
         ORDER BY created_at DESC
-        """
+        """,
+        *params,
     )
     return [dict(r) for r in rows]
 
@@ -228,6 +235,16 @@ async def ensure_schema():
     await pool.execute("CREATE INDEX IF NOT EXISTS idx_users_email ON users(email)")
     await pool.execute("ALTER TABLE api_keys ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES users(id)")
     await pool.execute("ALTER TABLE api_keys ADD COLUMN IF NOT EXISTS webhook_url TEXT")
+    # Tymczasowe konta demo (izolacja gości demo, auto-usuwanie po wygaśnięciu)
+    for table in ("users", "api_keys"):
+        await pool.execute(f"ALTER TABLE {table} ADD COLUMN IF NOT EXISTS is_demo BOOLEAN NOT NULL DEFAULT false")
+        await pool.execute(f"ALTER TABLE {table} ADD COLUMN IF NOT EXISTS expires_at TIMESTAMPTZ")
+    await pool.execute(
+        "CREATE INDEX IF NOT EXISTS idx_api_keys_demo_expires ON api_keys(expires_at) WHERE is_demo"
+    )
+    await pool.execute(
+        "CREATE INDEX IF NOT EXISTS idx_users_demo_expires ON users(expires_at) WHERE is_demo"
+    )
 
 
 async def create_user(name: str, email: str, password_hash: str) -> dict:
@@ -252,7 +269,10 @@ async def get_user_by_email(email: str) -> Optional[dict]:
 
 async def get_user_by_id(user_id: str) -> Optional[dict]:
     row = await get_pool().fetchrow(
-        "SELECT id, name, email, created_at FROM users WHERE id = $1",
+        """
+        SELECT id, name, email, created_at, is_demo, expires_at FROM users
+        WHERE id = $1 AND (expires_at IS NULL OR expires_at > NOW())
+        """,
         user_id,
     )
     return dict(row) if row else None
@@ -262,10 +282,12 @@ async def get_user_api_key(user_id: str) -> Optional[dict]:
     row = await get_pool().fetchrow(
         """
         SELECT id, key_prefix, name, facility_name, plan, scans_limit, is_active,
+               is_demo, expires_at,
                (SELECT COUNT(*) FROM scans
                 WHERE api_key_id = api_keys.id::text
-                  AND created_at >= date_trunc('month', NOW())) AS scans_this_month
+                  AND (api_keys.is_demo OR created_at >= date_trunc('month', NOW()))) AS scans_this_month
         FROM api_keys WHERE user_id = $1 AND is_active = true
+          AND (expires_at IS NULL OR expires_at > NOW())
         ORDER BY created_at ASC LIMIT 1
         """,
         user_id,
@@ -308,3 +330,88 @@ async def seed_demo_keys():
             _hash_key(raw), prefix, name, facility, plan, PLAN_LIMITS[plan],
         )
     logger.info("Demo klucze API dodane do bazy")
+
+
+# ── DEMO (tymczasowe, izolowane konta gości) ─────────────────────────────────
+
+DEMO_PLAN = "demo_guest"
+
+
+async def create_demo_account(ttl_hours: int, scans_limit: int) -> tuple[dict, dict]:
+    """Tworzy osobne konto + klucz API dla jednego gościa demo.
+
+    Hasło jest losowe i nigdzie nie zwracane — na konto demo nie da się zalogować
+    przez /auth/login, dostęp daje wyłącznie wydany token i klucz.
+    """
+    import bcrypt
+
+    suffix = secrets.token_hex(6)
+    email = f"demo-{suffix}@demo.ikzocr.invalid"
+    name = f"Gość demo {suffix[:4]}"
+    password_hash = bcrypt.hashpw(secrets.token_bytes(32), bcrypt.gensalt()).decode()
+
+    raw = "mk_demo_" + secrets.token_urlsafe(24)
+    async with get_pool().acquire() as conn:
+        async with conn.transaction():
+            user = await conn.fetchrow(
+                """
+                INSERT INTO users (name, email, password_hash, is_demo, expires_at)
+                VALUES ($1, $2, $3, true, NOW() + make_interval(hours => $4))
+                RETURNING id, name, email, created_at, is_demo, expires_at
+                """,
+                name, email, password_hash, ttl_hours,
+            )
+            key = await conn.fetchrow(
+                """
+                INSERT INTO api_keys (key_hash, key_prefix, name, facility_name, plan,
+                                      scans_limit, user_id, is_demo, expires_at)
+                VALUES ($1, $2, 'Klucz demo', $3, $4, $5, $6, true, $7)
+                RETURNING id, key_prefix, plan, scans_limit, expires_at
+                """,
+                _hash_key(raw), raw[:16], f"Placówka demo {suffix[:4]}", DEMO_PLAN,
+                scans_limit, user["id"], user["expires_at"],
+            )
+    return dict(user), {**dict(key), "raw_key": raw}
+
+
+async def delete_demo_account(user_id: str) -> dict:
+    """Usuwa konto demo wraz z kluczami i wszystkimi dokumentami. Konta zwykłe pomija."""
+    return await _purge_demo("u.id = $1::uuid AND u.is_demo", user_id)
+
+
+async def purge_expired_demo() -> dict:
+    """Usuwa wygasłe konta demo, ich klucze i dokumenty."""
+    return await _purge_demo("u.is_demo AND u.expires_at <= NOW()")
+
+
+async def _purge_demo(user_filter: str, *params) -> dict:
+    async with get_pool().acquire() as conn:
+        async with conn.transaction():
+            user_ids = [r["id"] for r in await conn.fetch(
+                f"SELECT u.id FROM users u WHERE {user_filter} FOR UPDATE", *params
+            )]
+            # Klucze demo: przypięte do usuwanych kont albo same wygasłe (osierocone)
+            key_ids = [str(r["id"]) for r in await conn.fetch(
+                """
+                SELECT id FROM api_keys
+                WHERE is_demo AND (user_id = ANY($1::uuid[]) OR expires_at <= NOW())
+                """,
+                user_ids,
+            )]
+            scans = await conn.execute(
+                "DELETE FROM scans WHERE api_key_id = ANY($1::text[])", key_ids
+            )
+            keys = await conn.execute(
+                "DELETE FROM api_keys WHERE id = ANY($1::uuid[]) AND is_demo", key_ids
+            )
+            users = await conn.execute(
+                "DELETE FROM users WHERE id = ANY($1::uuid[]) AND is_demo", user_ids
+            )
+    result = {
+        "users": int(users.split()[-1]),
+        "api_keys": int(keys.split()[-1]),
+        "scans": int(scans.split()[-1]),
+    }
+    if any(result.values()):
+        logger.info("Demo cleanup: %s", result)
+    return result

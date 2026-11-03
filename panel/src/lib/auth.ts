@@ -1,5 +1,7 @@
 const TOKEN_KEY = 'ikzocr_token'
 const USER_KEY  = 'ikzocr_user'
+// Klucz API sesji demo trzymamy osobno, żeby nie nadpisać klucza zwykłego konta
+export const DEMO_API_KEY = 'ikzocr_demo_api_key'
 
 export interface AuthUser {
   id: string
@@ -8,6 +10,8 @@ export interface AuthUser {
   plan?: string
   scans_limit?: number
   scans_this_month?: number
+  is_demo?: boolean
+  expires_at?: string
 }
 
 export function getToken(): string | null {
@@ -41,7 +45,12 @@ export function isAuthenticated(): boolean {
   }
 }
 
+export function isDemo(): boolean {
+  return !!getUser()?.is_demo
+}
+
 export function logout() {
   localStorage.removeItem(TOKEN_KEY)
   localStorage.removeItem(USER_KEY)
+  localStorage.removeItem(DEMO_API_KEY)
 }

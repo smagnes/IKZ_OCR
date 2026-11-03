@@ -3,8 +3,8 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import clsx from 'clsx'
-import { getUser, logout } from '@/lib/auth'
-import { fetchMe } from '@/lib/api'
+import { getUser, logout, isDemo } from '@/lib/auth'
+import { fetchMe, endDemo } from '@/lib/api'
 
 const NAV = [
   { href: '/scan',       icon: ScanIcon,      label: 'Scan' },
@@ -38,7 +38,8 @@ export default function Sidebar() {
 
   const pct = Math.min(100, Math.round((planInfo.used / planInfo.limit) * 100))
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    if (isDemo()) await endDemo()
     logout()
     router.push('/login')
   }
