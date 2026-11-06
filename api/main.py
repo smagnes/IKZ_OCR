@@ -36,10 +36,16 @@ from demo import RateLimiter, client_ip
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 logger = logging.getLogger(__name__)
 
-async def send_webhook(url: str, payload: dict) -> None:
+async def send_webhook(url: str, payload: dict, secret: str | None = None) -> None:
     try:
+        import hashlib, hmac as _hmac, json as _json
+        body = _json.dumps(payload, separators=(",", ":"), ensure_ascii=False).encode()
+        headers = {"X-IKZOCR-Event": "scan.completed", "Content-Type": "application/json"}
+        if secret:
+            sig = _hmac.new(secret.encode(), body, hashlib.sha256).hexdigest()
+            headers["X-IKZOCR-Signature"] = f"sha256={sig}"
         async with httpx.AsyncClient(timeout=10) as client:
-            await client.post(url, json=payload, headers={"X-IKZOCR-Event": "scan.completed"})
+            await client.post(url, content=body, headers=headers)
         logger.info("Webhook wysłany do %s", url)
     except Exception as exc:
         logger.warning("Webhook nieudany (%s): %s", url, exc)
@@ -447,7 +453,12 @@ async def scan_document(
     )
 
     if key_record.get("webhook_url") and not key_record.get("is_demo"):
-        background_tasks.add_task(send_webhook, key_record["webhook_url"], response.model_dump(mode="json"))
+        background_tasks.add_task(
+            send_webhook,
+            key_record["webhook_url"],
+            response.model_dump(mode="json"),
+            key_record.get("webhook_secret"),
+        )
 
     return response
 
@@ -685,13 +696,14 @@ async def create_api_key(body: ApiKeyCreate, key_record: dict = Depends(verify_a
 
 class WebhookBody(BaseModel):
     webhook_url: Optional[str] = None
+    webhook_secret: Optional[str] = None
 
 
 @app.patch("/v1/api-keys/{key_id}/webhook", summary="Ustaw URL webhooka dla klucza")
 async def update_webhook(key_id: str, body: WebhookBody, key_record: dict = Depends(verify_api_key)):
     forbid_demo(key_record)
-    await db.set_webhook_url(key_id, body.webhook_url or None)
-    return {"ok": True, "webhook_url": body.webhook_url}
+    await db.set_webhook_url(key_id, body.webhook_url or None, body.webhook_secret or None)
+    return {"ok": True, "webhook_url": body.webhook_url, "hmac_enabled": bool(body.webhook_secret)}
 
 
 class SendEmailBody(BaseModel):

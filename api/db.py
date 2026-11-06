@@ -44,7 +44,7 @@ def _hash_key(raw: str) -> str:
 async def get_api_key_record(raw_key: str) -> Optional[dict]:
     row = await get_pool().fetchrow(
         """
-        SELECT id, key_prefix, name, facility_name, plan, scans_limit, is_active, webhook_url,
+        SELECT id, key_prefix, name, facility_name, plan, scans_limit, is_active, webhook_url, webhook_secret,
                user_id, is_demo, expires_at,
                (SELECT COUNT(*) FROM scans
                 WHERE api_key_id = api_keys.id::text
@@ -75,10 +75,10 @@ async def create_api_key(name: str, facility_name: str, plan: str = "starter") -
     return {**dict(row), "raw_key": raw}
 
 
-async def set_webhook_url(key_id: str, webhook_url: Optional[str]) -> None:
+async def set_webhook_url(key_id: str, webhook_url: Optional[str], webhook_secret: Optional[str] = None) -> None:
     await get_pool().execute(
-        "UPDATE api_keys SET webhook_url = $1 WHERE id = $2",
-        webhook_url, key_id,
+        "UPDATE api_keys SET webhook_url = $1, webhook_secret = COALESCE($3, webhook_secret) WHERE id = $2",
+        webhook_url, key_id, webhook_secret,
     )
 
 
@@ -235,6 +235,7 @@ async def ensure_schema():
     await pool.execute("CREATE INDEX IF NOT EXISTS idx_users_email ON users(email)")
     await pool.execute("ALTER TABLE api_keys ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES users(id)")
     await pool.execute("ALTER TABLE api_keys ADD COLUMN IF NOT EXISTS webhook_url TEXT")
+    await pool.execute("ALTER TABLE api_keys ADD COLUMN IF NOT EXISTS webhook_secret TEXT")
     # Tymczasowe konta demo (izolacja gości demo, auto-usuwanie po wygaśnięciu)
     for table in ("users", "api_keys"):
         await pool.execute(f"ALTER TABLE {table} ADD COLUMN IF NOT EXISTS is_demo BOOLEAN NOT NULL DEFAULT false")
