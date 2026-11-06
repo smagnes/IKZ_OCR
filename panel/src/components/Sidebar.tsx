@@ -29,13 +29,19 @@ export default function Sidebar() {
   }))
   const [open, setOpen] = useState(false)
 
-  useEffect(() => {
+  const refreshPlan = () => {
     fetchMe()
       .then(d => setPlanInfo({ plan: d.plan, used: d.scans_this_month, limit: d.scans_limit }))
       .catch(() => {
         const u = getUser()
         if (u) setPlanInfo({ plan: u.plan ?? 'starter', used: u.scans_this_month ?? 0, limit: u.scans_limit ?? 200 })
       })
+  }
+
+  useEffect(() => {
+    refreshPlan()
+    window.addEventListener('scan-complete', refreshPlan)
+    return () => window.removeEventListener('scan-complete', refreshPlan)
   }, [])
 
   useEffect(() => { setOpen(false) }, [path])

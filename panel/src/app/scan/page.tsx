@@ -66,6 +66,7 @@ export default function ScanPage() {
     try {
       const result = await scanDocument(item.file)
       setQueue(prev => prev.map(q => q.id === itemId ? { ...q, status: 'done', result } : q))
+      window.dispatchEvent(new Event('scan-complete'))
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'OCR Error'
       setQueue(prev => prev.map(q => q.id === itemId ? { ...q, status: 'error', error: msg } : q))
