@@ -133,17 +133,35 @@ Szczegóły: `docs/DEMO_ISOLATION.md`
 
 ---
 
+## Bezpieczeństwo — wdrożone (11.2026)
+
+Hardening wdrożony po audycie zewnętrznym (11.2026):
+
+- **Blokada /openapi.json, /docs, /redoc** — API schema niedostępna publicznie
+- **Brute force login** — 10 prób / 15 min per IP, blokada 429
+- **SSRF na webhookach** — walidacja adresów, blok prywatnych IP/loopack
+- **Magic bytes** — typ pliku z nagłówka binarnego, nie z Content-Type
+- **PESEL masking** — raw_text zamazuje numery PESEL przed zapisem do bazy
+- **HMAC webhooks** — `X-IKZOCR-Signature: sha256=<hmac>` na każdym wywołaniu
+- **Non-root Docker** — kontener działa jako user `appuser` (uid 1001)
+- **Nginx security headers** — HSTS, X-Content-Type-Options, X-Frame-Options, Referrer-Policy
+- **CORS** — `CORS_ORIGINS=https://panel.ikzocr.pl` (usunięty localhost)
+- **JWT_SECRET** — zrotowany na produkcji (`openssl rand -hex 32`)
+- **Hardcoded demo key usunięty** — panel nie wysyła klucza bez auth
+- **async OCR** — `asyncio.to_thread()` + timeout 55s, nginx read_timeout 65s
+
+---
+
 ## Bezpieczeństwo — braki do uzupełnienia
 
 | # | Problem | Ryzyko | Fix |
 |---|---|---|---|
-| 1 | `JWT_SECRET=ikzocr_jwt_secret_change_in_production_2026` | Wysoki — każdy może sfałszować token | Zmień na losowy 64-znakowy string: `openssl rand -hex 32` |
-| 2 | Brak rotacji kluczy API Anthropic | Średni — klucz wyciekł do `.env` bez backupu | Ustaw alert wygaśnięcia w Anthropic Console |
-| 3 | Alerty email nie działają | Średni — awaria niezauważona | Skonfiguruj n8n webhook lub msmtp |
-| 4 | Dysk 10GB na GCP | Niski-Średni — build może zapełnić dysk | Zwiększ do 20-30GB lub dodaj cron `docker system prune -f` raz/tydzień |
-| 5 | Panel Next.js budowany jako dev? | Sprawdź | `docker exec medyk_panel node -e "console.log(process.env.NODE_ENV)"` |
-| 6 | Brak backupu Supabase | Wysoki | Włącz Point-in-Time Recovery w Supabase Dashboard |
-| 7 | `CORS_ORIGINS` zawiera `localhost:3000` | Niski | Usuń localhost z CORS na produkcji |
+| 1 | Brak rotacji kluczy API Anthropic | Średni — ustaw alert wygaśnięcia | Anthropic Console → alert |
+| 2 | Alerty email nie działają | Średni — awaria niezauważona | n8n webhook lub msmtp + Gmail SMTP |
+| 3 | Dysk 10GB na GCP | Niski-Średni — build może zapełnić dysk | Zwiększ do 20-30GB w GCP Console |
+| 4 | Panel Next.js budowany jako dev? | Sprawdź | `docker exec medyk_panel node -e "console.log(process.env.NODE_ENV)"` |
+| 5 | Brak backupu Supabase | Wysoki | Włącz Point-in-Time Recovery w Supabase Dashboard |
+| 6 | Brak cron docker prune | Niski | `0 3 * * 0 docker system prune -f >> ~/docker-prune.log 2>&1` |
 
 ---
 
