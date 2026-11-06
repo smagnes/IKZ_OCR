@@ -312,18 +312,18 @@ async def end_demo(jwt_user: dict = Depends(verify_jwt_user)):
     return {"deleted": True, **result}
 
 
-@app.post(“/auth/login”, summary=”Logowanie”)
+@app.post("/auth/login", summary="Logowanie")
 async def login(body: LoginBody, request: Request):
-    login_limiter.check(_ip(request), “Zbyt wiele prób logowania z tego adresu. Spróbuj za 15 minut.”)
-    blocked = {e.strip().lower() for e in settings.blocked_login_emails.split(“,”) if e.strip()}
+    login_limiter.check(_ip(request), "Zbyt wiele prób logowania z tego adresu. Spróbuj za 15 minut.")
+    blocked = {e.strip().lower() for e in settings.blocked_login_emails.split(",") if e.strip()}
     if body.email.lower() in blocked:
         raise HTTPException(
             status_code=403,
-            detail=”Wspólne konto demo zostało wyłączone. Użyj przycisku „Wypróbuj demo”.”,
+            detail='Wspólne konto demo zostało wyłączone. Użyj przycisku "Wypróbuj demo".',
         )
     user = await db.get_user_by_email(body.email.lower())
-    if not user or not _verify_pw(body.password, user[“password_hash”]):
-        raise HTTPException(status_code=401, detail=”Błędny email lub hasło”)
+    if not user or not _verify_pw(body.password, user["password_hash"]):
+        raise HTTPException(status_code=401, detail="Błędny email lub hasło")
 
     key_data = await db.get_user_api_key(str(user["id"]))
     plan = key_data["plan"] if key_data else "starter"
