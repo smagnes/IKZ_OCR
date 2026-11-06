@@ -1,7 +1,7 @@
 # IKZOCR — Polityka ochrony danych osobowych (RODO)
 
 > Dokument zgodny z RODO (Rozporządzenie UE 2016/679) oraz UODO (Ustawa z dnia 10 maja 2018 r.)  
-> Ostatnia aktualizacja: 2026-07-27
+> Ostatnia aktualizacja: 2026-11-06
 
 ## 1. Administrator danych
 
@@ -58,12 +58,21 @@ System IKZOCR przetwarza następujące kategorie danych:
 
 ## 6. Przekazywanie danych
 
-### W wersji SaaS
-Dane są przechowywane na serwerach w UE (Niemcy/Holandia). Administrator nie przekazuje danych do państw trzecich.
+### Architektura przetwarzania
 
-**Podmioty przetwarzające:**
-- Dostawca infrastruktury serwerowej (DPA podpisana)
-- Dostawca systemu płatności — Stripe/Przelewy24 (własna polityka RODO)
+IKZOCR przetwarza dokumenty medyczne **wyłącznie lokalnie**, na własnej infrastrukturze SZOP sp. z o.o. zlokalizowanej w Polsce. Silnik OCR działa on-premise — żaden dokument ani fragment jego treści nie jest przesyłany do zewnętrznych serwisów chmurowych.
+
+**Podmioty przetwarzające (podprocesory):**
+
+| Podmiot | Rola | Lokalizacja | Dane medyczne |
+|---------|------|-------------|---------------|
+| Supabase Ireland Ltd. | Baza danych (PostgreSQL) | UE (Frankfurt) | Tak — wyniki OCR, dane kont |
+| [Dostawca serwera fizycznego] | Kolokacja / hosting | Polska (Gdańsk) | Tak — wszystkie dane w spoczynku |
+| Przelewy24 / Stripe | Płatności | UE | Nie — tylko dane rozliczeniowe |
+
+Z każdym podmiotem przetwarzającym podpisana jest umowa powierzenia przetwarzania danych (DPA) zgodna z art. 28 RODO.
+
+Administrator **nie przekazuje danych do państw trzecich** (poza UE/EOG).
 
 ### W wersji On-Premise
 Dane **nie opuszczają** infrastruktury klienta. Administrator (SZOP sp. z o.o.) nie ma dostępu do danych medycznych klientów na instalacjach lokalnych.
