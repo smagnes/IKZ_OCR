@@ -21,9 +21,13 @@ const NAV2 = [
 export default function Sidebar() {
   const path = usePathname()
   const router = useRouter()
-  const [planInfo, setPlanInfo] = useState({ plan: 'starter', used: 0, limit: 200 })
-  const [open, setOpen] = useState(false)
   const user = getUser()
+  const [planInfo, setPlanInfo] = useState(() => ({
+    plan: user?.plan ?? 'starter',
+    used: user?.scans_this_month ?? 0,
+    limit: user?.scans_limit ?? 200,
+  }))
+  const [open, setOpen] = useState(false)
 
   useEffect(() => {
     fetchMe()
