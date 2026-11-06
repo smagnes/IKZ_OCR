@@ -86,7 +86,7 @@ export default function MedicalResultView({ result }: { result: ScanResult }) {
       <div className="flex items-start justify-between gap-3 flex-wrap">
         <div>
           <span className="inline-flex items-center px-3 py-1.5 rounded-xl text-xs font-semibold text-white"
-                style={{ background: 'linear-gradient(135deg, #00E5A0, #00B37E)' }}>
+                style={{ background: 'linear-gradient(135deg, #3B82F6, #2563EB)' }}>
             {result.doc_type_label}
           </span>
           <div className="flex items-center gap-2 mt-1.5 flex-wrap">
@@ -104,7 +104,7 @@ export default function MedicalResultView({ result }: { result: ScanResult }) {
         <div className="flex gap-2">
           <button onClick={copyResult}
             className="text-xs px-3 py-1.5 rounded-lg border transition-colors font-medium"
-            style={{ borderColor: '#B3EDD8', color: copied ? '#00B37E' : '#94A3B8', background: copied ? '#D6F5EC' : 'white' }}>
+            style={{ borderColor: '#B3EDD8', color: copied ? '#2563EB' : '#94A3B8', background: copied ? '#D6F5EC' : 'white' }}>
             {copied ? '✓ Skopiowano' : 'Kopiuj'}
           </button>
           <button onClick={() => setEmailModal(true)}
@@ -184,7 +184,7 @@ export default function MedicalResultView({ result }: { result: ScanResult }) {
                   <tr key={k} className="hover:bg-blue-50/30 transition-colors">
                     <td className="px-4 py-2 text-slate-600 font-medium text-xs">{k.replace(/_/g, ' ')}</td>
                     <td className="px-4 py-2 text-right font-semibold font-mono text-xs"
-                        style={{ color: abnormal ? '#DC2626' : '#0D1F17' }}>
+                        style={{ color: abnormal ? '#DC2626' : '#0B1C2E' }}>
                       {v}
                     </td>
                     <td className="px-4 py-2 text-center">
@@ -204,12 +204,12 @@ export default function MedicalResultView({ result }: { result: ScanResult }) {
       {result.ikz_examination_id && (
         <div className="rounded-2xl p-3.5 flex items-center gap-3 border"
              style={{ background: '#D6F5EC', borderColor: '#B3EDD8' }}>
-          <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: '#00B37E' }}>
+          <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: '#2563EB' }}>
             <span className="text-white text-sm">📱</span>
           </div>
           <div>
             <p className="text-xs font-semibold" style={{ color: '#007A57' }}>Wysłano do IKZ Mobile</p>
-            <p className="text-[10px] font-mono" style={{ color: '#00B37E' }}>examination_id: {result.ikz_examination_id}</p>
+            <p className="text-[10px] font-mono" style={{ color: '#2563EB' }}>examination_id: {result.ikz_examination_id}</p>
           </div>
         </div>
       )}
@@ -219,7 +219,7 @@ export default function MedicalResultView({ result }: { result: ScanResult }) {
         <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50"
              onClick={() => setEmailModal(false)}>
           <div className="bg-white rounded-2xl p-6 w-80 shadow-xl" onClick={e => e.stopPropagation()}>
-            <h3 className="text-sm font-semibold mb-3" style={{ color: '#0D1F17' }}>Wyślij wynik na email</h3>
+            <h3 className="text-sm font-semibold mb-3" style={{ color: '#0B1C2E' }}>Wyślij wynik na email</h3>
             {emailSent ? (
               <p className="text-sm text-emerald-600 text-center py-2">✓ Wysłano!</p>
             ) : (
@@ -234,7 +234,7 @@ export default function MedicalResultView({ result }: { result: ScanResult }) {
                     style={{ borderColor: '#B3EDD8', color: '#94A3B8' }}>Cancel</button>
                   <button onClick={handleEmail} disabled={emailSending || !emailTo}
                     className="flex-1 text-sm py-2 rounded-xl text-white font-medium disabled:opacity-50"
-                    style={{ background: '#00B37E' }}>
+                    style={{ background: '#2563EB' }}>
                     {emailSending ? '...' : 'Wyślij'}
                   </button>
                 </div>

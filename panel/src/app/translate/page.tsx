@@ -74,7 +74,7 @@ export default function TranslatePage() {
       {/* Header */}
       <header className="flex items-center justify-between px-6 py-3.5 bg-white border-b border-blue-100/60">
         <div>
-          <h1 className="text-sm font-semibold" style={{ color: '#0D1F17' }}>Medical Document Translation</h1>
+          <h1 className="text-sm font-semibold" style={{ color: '#0B1C2E' }}>Medical Document Translation</h1>
           <p className="text-[11px] text-slate-400">Upload any medical document — AI extracts, translates, and structures the data into English</p>
         </div>
         <div className="flex items-center gap-3">
@@ -82,14 +82,14 @@ export default function TranslatePage() {
                 style={{ background: '#D6F5EC', color: '#007A57', borderColor: '#B3EDD8' }}>
             <svg width="10" height="10" viewBox="0 0 24 24" fill="none">
               <path d="M3 5h12M9 3v2m4.5 12l-1.5-3-1.5 3m-1 0h4M5 5l6 6.5M11 5l-6 6.5"
-                stroke="#00B37E" strokeWidth="2" strokeLinecap="round"/>
+                stroke="#2563EB" strokeWidth="2" strokeLinecap="round"/>
             </svg>
             Powered by IKZ
           </span>
           {file && status !== 'processing' && (
             <button onClick={run}
               className="text-white text-xs px-4 py-2 rounded-xl font-semibold transition-all hover:shadow-lg hover:-translate-y-px"
-              style={{ background: 'linear-gradient(135deg, #00E5A0, #00B37E)' }}>
+              style={{ background: 'linear-gradient(135deg, #3B82F6, #2563EB)' }}>
               Translate document
             </button>
           )}
@@ -120,7 +120,7 @@ export default function TranslatePage() {
                    style={{ background: '#D6F5EC' }}>
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
                   <path d="M3 5h12M9 3v2m4.5 12l-1.5-3-1.5 3m-1 0h4M5 5l6 6.5M11 5l-6 6.5M21 12l-5 9M21 12l-5-5m5 5H10"
-                    stroke="#00B37E" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                    stroke="#2563EB" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
               </div>
               <p className="text-xs font-semibold" style={{ color: '#007A57' }}>Upload document</p>
@@ -149,7 +149,7 @@ export default function TranslatePage() {
               {status === 'idle' && (
                 <button onClick={run}
                   className="mt-3 w-full text-white text-xs py-2.5 rounded-xl font-semibold transition-all hover:shadow-md"
-                  style={{ background: 'linear-gradient(135deg, #00E5A0, #00B37E)' }}>
+                  style={{ background: 'linear-gradient(135deg, #3B82F6, #2563EB)' }}>
                   Translate now
                 </button>
               )}
@@ -170,7 +170,7 @@ export default function TranslatePage() {
               ].map(([step, desc]) => (
                 <div key={step} className="flex items-start gap-2.5">
                   <div className="w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 text-[9px] font-bold"
-                       style={{ background: '#D6F5EC', color: '#00B37E' }}>{step[0]}</div>
+                       style={{ background: '#D6F5EC', color: '#2563EB' }}>{step[0]}</div>
                   <div>
                     <p className="text-[10px] font-semibold text-slate-600">{step}</p>
                     <p className="text-[10px] text-slate-400">{desc}</p>
@@ -216,7 +216,7 @@ function TranslateResult({
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <div className="flex items-center gap-2 flex-wrap">
           <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-white"
-                style={{ background: 'linear-gradient(135deg, #00E5A0, #00B37E)' }}>
+                style={{ background: 'linear-gradient(135deg, #3B82F6, #2563EB)' }}>
             {result.document_type}
           </span>
           <span className="text-[10px] text-slate-400 px-2 py-1 bg-white rounded-lg border border-blue-50">
@@ -227,7 +227,7 @@ function TranslateResult({
         <div className="flex gap-2">
           <button onClick={copy}
             className="text-xs px-3 py-1.5 rounded-lg border transition-colors font-medium"
-            style={{ borderColor: '#B3EDD8', color: copied ? '#00B37E' : '#94A3B8',
+            style={{ borderColor: '#B3EDD8', color: copied ? '#2563EB' : '#94A3B8',
                      background: copied ? '#D6F5EC' : 'white' }}>
             {copied ? '✓ Copied' : 'Copy translation'}
           </button>
@@ -321,7 +321,7 @@ function TranslateResult({
                     <tr key={i} className="hover:bg-blue-50/30">
                       <td className="px-4 py-2.5 text-slate-600 font-medium text-xs">{f.label}</td>
                       <td className="px-4 py-2.5 text-right font-semibold font-mono text-xs"
-                          style={{ color: f.flag && f.flag !== 'normal' ? '#DC2626' : '#0D1F17' }}>
+                          style={{ color: f.flag && f.flag !== 'normal' ? '#DC2626' : '#0B1C2E' }}>
                         {f.value}
                       </td>
                       <td className="px-4 py-2.5 text-center">
@@ -357,7 +357,7 @@ function ProcessingState() {
     <div className="flex flex-col items-center justify-center h-full gap-4">
       <div className="relative w-14 h-14">
         <div className="absolute inset-0 border-2 rounded-full animate-spin"
-             style={{ borderColor: '#00B37E', borderTopColor: 'transparent' }} />
+             style={{ borderColor: '#2563EB', borderTopColor: 'transparent' }} />
         <div className="absolute inset-2 border-2 rounded-full animate-spin"
              style={{ borderColor: '#B3EDD8', borderTopColor: 'transparent', animationDirection: 'reverse', animationDuration: '0.8s' }} />
       </div>

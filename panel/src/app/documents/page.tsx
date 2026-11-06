@@ -86,14 +86,14 @@ export default function DocumentsPage() {
       {/* Header */}
       <header className="flex items-center justify-between px-6 py-3.5 bg-white border-b border-blue-100/60">
         <div>
-          <h1 className="text-sm font-semibold" style={{ color: '#0D1F17' }}>Archiwum dokumentów</h1>
+          <h1 className="text-sm font-semibold" style={{ color: '#0B1C2E' }}>Archiwum dokumentów</h1>
           <p className="text-[11px] text-slate-400">Historia skanowań i wyniki OCR</p>
         </div>
         <div className="flex gap-2">
           {selectedId && (
             <button onClick={closeDetail}
               className="text-xs border border-blue-100 px-3 py-1.5 rounded-xl font-medium transition-colors hover:bg-blue-50"
-              style={{ color: '#00B37E' }}>
+              style={{ color: '#2563EB' }}>
               ← Lista dokumentów
             </button>
           )}
@@ -114,7 +114,7 @@ export default function DocumentsPage() {
         ].map(s => (
           <div key={s.label} className="rounded-xl px-3 py-2" style={{ background: '#F5F8F6' }}>
             <p className="text-[10px] text-slate-400">{s.label}</p>
-            <p className="text-lg font-bold mt-0.5" style={{ color: '#0D1F17' }}>{s.value}</p>
+            <p className="text-lg font-bold mt-0.5" style={{ color: '#0B1C2E' }}>{s.value}</p>
           </div>
         ))}
       </div>
@@ -125,7 +125,7 @@ export default function DocumentsPage() {
           <button key={f} onClick={() => { setFilter(f); closeDetail() }}
             className="text-xs px-3 py-1.5 rounded-full whitespace-nowrap transition-all font-medium"
             style={filter === f
-              ? { background: 'linear-gradient(135deg, #00E5A0, #00B37E)', color: 'white' }
+              ? { background: 'linear-gradient(135deg, #3B82F6, #2563EB)', color: 'white' }
               : { background: '#F5F8F6', color: '#475569' }}>
             {f === 'wszystkie' ? 'Wszystkie' : TYPE_LABELS[f] ?? f}
           </button>
@@ -140,9 +140,9 @@ export default function DocumentsPage() {
           selectedId ? 'w-[45%] border-r border-blue-50' : 'w-full')}>
           <div className="flex-1 overflow-y-auto scrollbar-thin">
             {loading ? (
-              <div className="flex items-center justify-center h-32 gap-2 text-sm" style={{ color: '#00B37E' }}>
+              <div className="flex items-center justify-center h-32 gap-2 text-sm" style={{ color: '#2563EB' }}>
                 <div className="w-4 h-4 border-2 rounded-full animate-spin"
-                     style={{ borderColor: '#00B37E', borderTopColor: 'transparent' }} />
+                     style={{ borderColor: '#2563EB', borderTopColor: 'transparent' }} />
                 Loading...
               </div>
             ) : docs.length === 0 ? (
@@ -187,7 +187,7 @@ export default function DocumentsPage() {
                         {/* Typ dokumentu */}
                         <td className="px-4 py-3">
                           <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
-                                style={{ background: '#D6F5EC', color: '#00B37E' }}>
+                                style={{ background: '#D6F5EC', color: '#2563EB' }}>
                             {String(doc.doc_type_label ?? TYPE_LABELS[String(doc.doc_type ?? '')] ?? '—')}
                           </span>
                         </td>
@@ -214,9 +214,9 @@ export default function DocumentsPage() {
                               <div className="flex items-center gap-2">
                                 <div className="w-12 h-1.5 rounded-full overflow-hidden" style={{ background: '#D6F5EC' }}>
                                   <div className="h-full rounded-full"
-                                       style={{ width: `${Math.round(Number(doc.confidence_overall) * 100)}%`, background: '#00B37E' }} />
+                                       style={{ width: `${Math.round(Number(doc.confidence_overall) * 100)}%`, background: '#2563EB' }} />
                                 </div>
-                                <span className="text-xs font-medium" style={{ color: '#00B37E' }}>
+                                <span className="text-xs font-medium" style={{ color: '#2563EB' }}>
                                   {Math.round(Number(doc.confidence_overall) * 100)}%
                                 </span>
                               </div>
@@ -224,7 +224,7 @@ export default function DocumentsPage() {
                           </td>
                           <td className="px-4 py-3">
                             <span className="text-xs px-2.5 py-1 rounded-full font-medium"
-                                  style={{ background: '#D6F5EC', color: '#00B37E' }}>
+                                  style={{ background: '#D6F5EC', color: '#2563EB' }}>
                               ✓ Gotowe
                             </span>
                           </td>
@@ -261,7 +261,7 @@ export default function DocumentsPage() {
                     fn(selectedId).catch(e => alert(e.message))
                   }}
                   className="text-[11px] font-mono font-semibold px-2.5 py-1 rounded-lg border transition-colors hover:bg-blue-50"
-                  style={{ borderColor: '#B3EDD8', color: '#00B37E' }}>
+                  style={{ borderColor: '#B3EDD8', color: '#2563EB' }}>
                   .{ext}
                 </button>
               ))}
@@ -270,7 +270,7 @@ export default function DocumentsPage() {
               {detailLoading ? (
                 <div className="flex flex-col items-center justify-center h-64 gap-3">
                   <div className="w-8 h-8 border-2 rounded-full animate-spin"
-                       style={{ borderColor: '#00B37E', borderTopColor: 'transparent' }} />
+                       style={{ borderColor: '#2563EB', borderTopColor: 'transparent' }} />
                   <p className="text-sm text-slate-400">Loading results…</p>
                 </div>
               ) : detailResult ? (

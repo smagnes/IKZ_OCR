@@ -33,7 +33,7 @@ export default function ConditionalLayout({ children }: { children: React.ReactN
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: '#F5F8F6' }}>
         <div className="w-6 h-6 border-2 rounded-full animate-spin"
-             style={{ borderColor: '#00B37E', borderTopColor: 'transparent' }} />
+             style={{ borderColor: '#2563EB', borderTopColor: 'transparent' }} />
       </div>
     )
   }

@@ -98,7 +98,7 @@ export default function ApiKeysPage() {
             <div className="flex gap-2">
               <button onClick={() => { navigator.clipboard.writeText(newRawKey); setCopied('modal') }}
                 className="flex-1 text-white text-sm py-2 rounded-xl font-semibold"
-                style={{ background: 'linear-gradient(135deg, #00E5A0, #00B37E)' }}>
+                style={{ background: 'linear-gradient(135deg, #3B82F6, #2563EB)' }}>
                 {copied === 'modal' ? '✓ Skopiowano' : 'Kopiuj klucz'}
               </button>
               <button onClick={() => setNewRawKey(null)}
@@ -111,7 +111,7 @@ export default function ApiKeysPage() {
       )}
       <header className="flex items-center px-6 py-3.5 bg-white border-b border-blue-100/60">
         <div>
-          <h1 className="text-sm font-semibold" style={{ color: '#0D1F17' }}>API / Integracja z IKZ Mobile</h1>
+          <h1 className="text-sm font-semibold" style={{ color: '#0B1C2E' }}>API / Integracja z IKZ Mobile</h1>
           <p className="text-[11px] text-slate-400">Klucze dostępu i dokumentacja endpointów</p>
         </div>
       </header>
@@ -122,12 +122,12 @@ export default function ApiKeysPage() {
         <div className="rounded-2xl p-4 flex gap-3 border"
              style={{ background: '#D6F5EC', borderColor: '#B3EDD8' }}>
           <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
-               style={{ background: '#00B37E' }}>
+               style={{ background: '#2563EB' }}>
             <span className="text-white text-base">📱</span>
           </div>
           <div>
             <p className="text-sm font-semibold" style={{ color: '#007A57' }}>Integracja z IKZ Mobile</p>
-            <p className="text-xs mt-0.5" style={{ color: '#00B37E' }}>
+            <p className="text-xs mt-0.5" style={{ color: '#2563EB' }}>
               Add <code className="px-1 py-0.5 rounded font-mono" style={{ background: '#B3EDD8' }}>X-IKZ-Silos-Id</code> header so the OCR result is automatically stored as an <em>examination</em> in the patient silo.
             </p>
           </div>
@@ -139,9 +139,9 @@ export default function ApiKeysPage() {
             Twoje klucze API
           </p>
           {loading ? (
-            <div className="flex items-center gap-2 text-sm" style={{ color: '#00B37E' }}>
+            <div className="flex items-center gap-2 text-sm" style={{ color: '#2563EB' }}>
               <div className="w-4 h-4 border-2 rounded-full animate-spin"
-                   style={{ borderColor: '#00B37E', borderTopColor: 'transparent' }} />
+                   style={{ borderColor: '#2563EB', borderTopColor: 'transparent' }} />
               Loading...
             </div>
           ) : (
@@ -153,7 +153,7 @@ export default function ApiKeysPage() {
                        style={{ background: '#D6F5EC' }}>
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
                       <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 11-7.778 7.778 5.5 5.5 0 017.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"
-                        stroke="#00B37E" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                        stroke="#2563EB" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
                     </svg>
                   </div>
                   <div className="flex-1">
@@ -167,7 +167,7 @@ export default function ApiKeysPage() {
                         {String(k.key_prefix ?? '')}••••
                       </code>
                       <span className="text-[10px] font-semibold px-2 py-1 rounded-full capitalize"
-                            style={{ background: '#D6F5EC', color: '#00B37E' }}>
+                            style={{ background: '#D6F5EC', color: '#2563EB' }}>
                         {String(k.plan ?? '')}
                       </span>
                       {Boolean(k.webhook_url) && (
@@ -180,7 +180,7 @@ export default function ApiKeysPage() {
                       <button onClick={() => copy(String(k.key_prefix ?? ''), String(k.key_id ?? ''))}
                         className="text-xs px-2.5 py-1.5 rounded-lg border transition-colors"
                         title="Kopiuje tylko prefiks — pełny klucz był widoczny tylko przy tworzeniu"
-                        style={{ borderColor: '#B3EDD8', color: copied === String(k.key_id) ? '#00B37E' : '#94A3B8' }}>
+                        style={{ borderColor: '#B3EDD8', color: copied === String(k.key_id) ? '#2563EB' : '#94A3B8' }}>
                         {copied === String(k.key_id) ? '✓ Skopiowano prefiks' : 'Kopiuj prefiks'}
                       </button>
                       <button onClick={() => { setWebhookEdit(String(k.key_id)); setWebhookVal(String(k.webhook_url ?? '')) }}
@@ -201,7 +201,7 @@ export default function ApiKeysPage() {
                       />
                       <button onClick={() => saveWebhook(String(k.key_id))} disabled={webhookSaving}
                         className="text-xs px-3 py-2 rounded-lg text-white font-medium disabled:opacity-50"
-                        style={{ background: '#00B37E' }}>
+                        style={{ background: '#2563EB' }}>
                         {webhookSaving ? '...' : 'Zapisz'}
                       </button>
                       <button onClick={() => setWebhookEdit(null)}
@@ -227,17 +227,17 @@ export default function ApiKeysPage() {
               placeholder="Name (e.g. Production)"
               className="flex-1 text-sm border rounded-xl px-3 py-2.5 focus:outline-none transition-colors"
               style={{ borderColor: '#B3EDD8' }}
-              onFocus={e => e.target.style.borderColor = '#00B37E'}
+              onFocus={e => e.target.style.borderColor = '#2563EB'}
               onBlur={e => e.target.style.borderColor = '#B3EDD8'} />
             <input value={form.facility_name} onChange={e => setForm(p => ({ ...p, facility_name: e.target.value }))}
               placeholder="Facility name"
               className="flex-1 text-sm border rounded-xl px-3 py-2.5 focus:outline-none transition-colors"
               style={{ borderColor: '#B3EDD8' }}
-              onFocus={e => e.target.style.borderColor = '#00B37E'}
+              onFocus={e => e.target.style.borderColor = '#2563EB'}
               onBlur={e => e.target.style.borderColor = '#B3EDD8'} />
             <button onClick={handleCreate} disabled={creating || !form.name || !form.facility_name}
               className="text-white text-sm px-5 py-2 rounded-xl font-semibold disabled:opacity-40 transition-all hover:shadow-md"
-              style={{ background: 'linear-gradient(135deg, #00E5A0, #00B37E)' }}>
+              style={{ background: 'linear-gradient(135deg, #3B82F6, #2563EB)' }}>
               {creating ? '...' : '+ Create'}
             </button>
           </div>
@@ -285,8 +285,8 @@ export default function ApiKeysPage() {
           <p className="text-[10px] font-semibold uppercase tracking-widest mb-3" style={{ color: '#007A57' }}>
             Przykładowa odpowiedź JSON
           </p>
-          <div className="rounded-2xl p-4 overflow-x-auto scrollbar-thin" style={{ background: '#0D1F17' }}>
-            <pre className="text-[11px] font-mono leading-relaxed whitespace-pre" style={{ color: '#00E5A0' }}>
+          <div className="rounded-2xl p-4 overflow-x-auto scrollbar-thin" style={{ background: '#0B1C2E' }}>
+            <pre className="text-[11px] font-mono leading-relaxed whitespace-pre" style={{ color: '#3B82F6' }}>
               {RESPONSE_EXAMPLE}
             </pre>
           </div>

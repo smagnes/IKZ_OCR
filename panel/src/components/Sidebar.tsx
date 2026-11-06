@@ -54,7 +54,7 @@ export default function Sidebar() {
       <button
         onClick={() => setOpen(o => !o)}
         className="md:hidden fixed top-3 left-3 z-50 w-9 h-9 rounded-xl flex items-center justify-center"
-        style={{ background: '#0D1F17' }}>
+        style={{ background: '#0B1C2E' }}>
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
           {open
             ? <path d="M18 6L6 18M6 6l12 12" stroke="white" strokeWidth="2" strokeLinecap="round"/>
@@ -73,13 +73,13 @@ export default function Sidebar() {
       'fixed md:relative',
       open ? 'translate-x-0' : '-translate-x-full md:translate-x-0',
       'w-56'
-    )} style={{ background: '#0D1F17' }}>
+    )} style={{ background: '#0B1C2E' }}>
 
       {/* Logo */}
       <div className="px-5 py-5 border-b border-white/10">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
-               style={{ background: 'linear-gradient(135deg, #00E5A0, #00B37E)' }}>
+               style={{ background: 'linear-gradient(135deg, #3B82F6, #2563EB)' }}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
               <path d="M9 12h6M12 9v6M12 3C7.03 3 3 7.03 3 12s4.03 9 9 9 9-4.03 9-9-4.03-9-9-9z"
                 stroke="white" strokeWidth="2" strokeLinecap="round"/>
@@ -87,7 +87,7 @@ export default function Sidebar() {
           </div>
           <div>
             <p className="text-sm font-semibold text-white leading-tight">IKZOCR</p>
-            <p className="text-[10px] leading-tight" style={{ color: '#4AE0A8' }}>AI Platform</p>
+            <p className="text-[10px] leading-tight" style={{ color: '#60A5FA' }}>AI Platform</p>
           </div>
         </div>
       </div>
@@ -118,7 +118,7 @@ export default function Sidebar() {
         })}
 
         <p className="text-[10px] uppercase tracking-widest px-3 pt-5 pb-1.5 font-medium"
-           style={{ color: '#00E5A0', opacity: 0.6 }}>
+           style={{ color: '#3B82F6', opacity: 0.6 }}>
           Integrations
         </p>
 
@@ -144,24 +144,24 @@ export default function Sidebar() {
           <div className="px-3 py-2.5 rounded-xl cursor-pointer hover:opacity-90 transition-opacity"
                style={{ background: 'rgba(2,132,199,0.2)' }}>
             <div className="flex items-center justify-between mb-1.5">
-              <span className="text-[11px] font-medium capitalize" style={{ color: '#4AE0A8' }}>
+              <span className="text-[11px] font-medium capitalize" style={{ color: '#60A5FA' }}>
                 Plan {planInfo.plan}
               </span>
-              <span className="text-[10px]" style={{ color: '#00E5A0' }}>
+              <span className="text-[10px]" style={{ color: '#3B82F6' }}>
                 {planInfo.used} / {planInfo.limit}
               </span>
             </div>
             <div className="h-1 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.1)' }}>
               <div className="h-full rounded-full transition-all"
-                   style={{ width: `${pct}%`, background: 'linear-gradient(90deg, #00E5A0, #00B37E)' }} />
+                   style={{ width: `${pct}%`, background: 'linear-gradient(90deg, #3B82F6, #2563EB)' }} />
             </div>
           </div>
         </Link>
 
         <div className="flex items-center justify-between px-3 py-1.5">
           <div className="flex items-center gap-2">
-            <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: '#00E5A0' }} />
-            <span className="text-[11px]" style={{ color: '#4AE0A8' }}>IKZ Mobile</span>
+            <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: '#3B82F6' }} />
+            <span className="text-[11px]" style={{ color: '#60A5FA' }}>IKZ Mobile</span>
           </div>
           <button onClick={handleLogout}
             className="text-[10px] px-2 py-0.5 rounded-lg transition-colors hover:bg-white/10"
@@ -177,7 +177,7 @@ export default function Sidebar() {
 
 function TranslateIcon({ active }: { active: boolean }) {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ color: active ? '#00E5A0' : 'currentColor' }}>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ color: active ? '#3B82F6' : 'currentColor' }}>
       <path d="M3 5h12M9 3v2m4.5 12l-1.5-3-1.5 3m-1 0h4M5 5l6 6.5M11 5l-6 6.5M21 12l-5 9M21 12l-5-5m5 5H10"
         stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
     </svg>
@@ -185,7 +185,7 @@ function TranslateIcon({ active }: { active: boolean }) {
 }
 function ScanIcon({ active }: { active: boolean }) {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ color: active ? '#00E5A0' : 'currentColor' }}>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ color: active ? '#3B82F6' : 'currentColor' }}>
       <path d="M3 7V5a2 2 0 012-2h2M17 3h2a2 2 0 012 2v2M21 17v2a2 2 0 01-2 2h-2M7 21H5a2 2 0 01-2-2v-2"
         stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
       <rect x="8" y="8" width="8" height="8" rx="1" stroke="currentColor" strokeWidth="1.8"/>
@@ -194,7 +194,7 @@ function ScanIcon({ active }: { active: boolean }) {
 }
 function DocIcon({ active }: { active: boolean }) {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ color: active ? '#00E5A0' : 'currentColor' }}>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ color: active ? '#3B82F6' : 'currentColor' }}>
       <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6z"
         stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
       <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"
@@ -204,7 +204,7 @@ function DocIcon({ active }: { active: boolean }) {
 }
 function ChartIcon({ active }: { active: boolean }) {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ color: active ? '#00E5A0' : 'currentColor' }}>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ color: active ? '#3B82F6' : 'currentColor' }}>
       <path d="M18 20V10M12 20V4M6 20v-6"
         stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
     </svg>
@@ -212,7 +212,7 @@ function ChartIcon({ active }: { active: boolean }) {
 }
 function KeyIcon({ active }: { active: boolean }) {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ color: active ? '#00E5A0' : 'currentColor' }}>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ color: active ? '#3B82F6' : 'currentColor' }}>
       <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 11-7.778 7.778 5.5 5.5 0 017.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"
         stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
     </svg>
@@ -220,7 +220,7 @@ function KeyIcon({ active }: { active: boolean }) {
 }
 function HospitalIcon({ active }: { active: boolean }) {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ color: active ? '#00E5A0' : 'currentColor' }}>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ color: active ? '#3B82F6' : 'currentColor' }}>
       <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"
         stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
       <path d="M9 22V12h6v10M12 7v4M10 9h4"
@@ -230,7 +230,7 @@ function HospitalIcon({ active }: { active: boolean }) {
 }
 function PlanIcon({ active }: { active: boolean }) {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ color: active ? '#00E5A0' : 'currentColor' }}>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ color: active ? '#3B82F6' : 'currentColor' }}>
       <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
         stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
     </svg>

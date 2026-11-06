@@ -79,7 +79,7 @@ export default function ScanPage() {
     <div className="flex flex-col h-full">
       <header className="flex items-center justify-between px-6 py-3.5 bg-white border-b border-blue-100/60">
         <div>
-          <h1 className="text-sm font-semibold" style={{ color: '#0D1F17' }}>New scan</h1>
+          <h1 className="text-sm font-semibold" style={{ color: '#0B1C2E' }}>New scan</h1>
           <p className="text-[11px] text-slate-400">Upload a medical document — AI identifies type and data</p>
         </div>
         <div className="flex items-center gap-3">
@@ -92,13 +92,13 @@ export default function ScanPage() {
           ) : (
           <div className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full border font-medium"
                style={{ background: '#D6F5EC', color: '#007A57', borderColor: '#B3EDD8' }}>
-            <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: '#00B37E' }} />
+            <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: '#2563EB' }} />
             IKZ Mobile connected
           </div>
           )}
           <button onClick={runAll}
             className="text-white text-xs px-4 py-2 rounded-xl font-semibold transition-all hover:shadow-lg hover:-translate-y-px"
-            style={{ background: 'linear-gradient(135deg, #00E5A0, #00B37E)' }}>
+            style={{ background: 'linear-gradient(135deg, #3B82F6, #2563EB)' }}>
             Run OCR
           </button>
         </div>
@@ -121,7 +121,7 @@ export default function ScanPage() {
                    style={{ background: '#D6F5EC' }}>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                   <path d="M12 15V3m0 0L8 7m4-4l4 4M2 17l.621 2.485A2 2 0 004.561 21h14.878a2 2 0 001.94-1.515L22 17"
-                    stroke="#00B37E" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                    stroke="#2563EB" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
               </div>
               <p className="text-xs font-semibold" style={{ color: '#007A57' }}>Upload documents</p>
@@ -189,7 +189,7 @@ function FileThumb({ file, size = 40 }: { file: File; size?: number }) {
   }
   return (
     <div className="rounded-lg flex items-center justify-center flex-shrink-0 text-base font-bold"
-         style={{ width: size, height: size, background: '#D6F5EC', color: '#00B37E', fontSize: size * 0.4 }}>
+         style={{ width: size, height: size, background: '#D6F5EC', color: '#2563EB', fontSize: size * 0.4 }}>
       PDF
     </div>
   )
@@ -300,7 +300,7 @@ function ResultView({ result, file }: { result: ScanResult; file: File }) {
       <div className="flex items-start justify-between gap-3 flex-wrap">
         <div>
           <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-white"
-                style={{ background: 'linear-gradient(135deg, #00E5A0, #00B37E)' }}>
+                style={{ background: 'linear-gradient(135deg, #3B82F6, #2563EB)' }}>
             {result.doc_type_label}
           </span>
           <div className="flex items-center gap-2 mt-1.5">
@@ -314,7 +314,7 @@ function ResultView({ result, file }: { result: ScanResult; file: File }) {
         <div className="flex gap-2">
           <button onClick={copyResult}
             className="text-xs px-3 py-1.5 rounded-lg border transition-colors font-medium"
-            style={{ borderColor: '#B3EDD8', color: copied ? '#00B37E' : '#94A3B8',
+            style={{ borderColor: '#B3EDD8', color: copied ? '#2563EB' : '#94A3B8',
                      background: copied ? '#D6F5EC' : 'white' }}>
             {copied ? '✓ Copied' : 'Copy'}
           </button>
@@ -405,7 +405,7 @@ function ResultView({ result, file }: { result: ScanResult; file: File }) {
                   <tr key={k} className="hover:bg-blue-50/30 transition-colors">
                     <td className="px-4 py-2.5 text-slate-600 font-medium">{k.replace(/_/g, ' ')}</td>
                     <td className="px-4 py-2.5 text-right font-semibold font-mono"
-                        style={{ color: abnormal ? '#DC2626' : '#0D1F17' }}>
+                        style={{ color: abnormal ? '#DC2626' : '#0B1C2E' }}>
                       {v}
                     </td>
                     <td className="px-4 py-2.5 text-center">
@@ -435,12 +435,12 @@ function ResultView({ result, file }: { result: ScanResult; file: File }) {
         <div className="rounded-2xl p-3.5 flex items-center gap-3 border"
              style={{ background: '#D6F5EC', borderColor: '#B3EDD8' }}>
           <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
-               style={{ background: '#00B37E' }}>
+               style={{ background: '#2563EB' }}>
             <span className="text-white text-sm">📱</span>
           </div>
           <div>
             <p className="text-xs font-semibold" style={{ color: '#007A57' }}>Sent to IKZ Mobile</p>
-            <p className="text-[10px] font-mono" style={{ color: '#00B37E' }}>
+            <p className="text-[10px] font-mono" style={{ color: '#2563EB' }}>
               examination_id: {result.ikz_examination_id}
             </p>
           </div>
@@ -451,7 +451,7 @@ function ResultView({ result, file }: { result: ScanResult; file: File }) {
         <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50"
              onClick={() => setEmailModal(false)}>
           <div className="bg-white rounded-2xl p-6 w-80 shadow-xl" onClick={e => e.stopPropagation()}>
-            <h3 className="text-sm font-semibold mb-3" style={{ color: '#0D1F17' }}>Send result by email</h3>
+            <h3 className="text-sm font-semibold mb-3" style={{ color: '#0B1C2E' }}>Send result by email</h3>
             {emailSent ? (
               <p className="text-sm text-emerald-600 text-center py-2">✓ Sent!</p>
             ) : (
@@ -468,7 +468,7 @@ function ResultView({ result, file }: { result: ScanResult; file: File }) {
                   </button>
                   <button onClick={handleEmail} disabled={emailSending || !emailTo}
                     className="flex-1 text-sm py-2 rounded-xl text-white font-medium disabled:opacity-50"
-                    style={{ background: '#00B37E' }}>
+                    style={{ background: '#2563EB' }}>
                     {emailSending ? '...' : 'Send'}
                   </button>
                 </div>
@@ -506,7 +506,7 @@ function InfoRow({ label, value, mono }: { label: string; value: string; mono?: 
 
 function ConfBar({ label, value }: { label: string; value: number }) {
   const pct = Math.round(value * 100)
-  const color = pct >= 80 ? '#059669' : pct >= 60 ? '#00B37E' : '#94A3B8'
+  const color = pct >= 80 ? '#059669' : pct >= 60 ? '#2563EB' : '#94A3B8'
   return (
     <div className="flex items-center gap-3">
       <span className="text-xs text-slate-500 w-16">{label}</span>
@@ -532,7 +532,7 @@ function ProcessingState() {
   return (
     <div className="flex flex-col items-center justify-center h-full gap-3">
       <div className="w-10 h-10 border-2 rounded-full animate-spin"
-           style={{ borderColor: '#00B37E', borderTopColor: 'transparent' }} />
+           style={{ borderColor: '#2563EB', borderTopColor: 'transparent' }} />
       <p className="text-sm font-medium" style={{ color: '#007A57' }}>Processing OCR…</p>
       <p className="text-xs text-slate-400">May take 30–90 seconds</p>
     </div>

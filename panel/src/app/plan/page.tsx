@@ -19,7 +19,7 @@ const PLANS = [
     price: '€119',
     scans: '1,000 scans / month',
     features: ['Everything in Starter', 'Webhook', 'CSV export', 'Priority support'],
-    color: '#00B37E',
+    color: '#2563EB',
     textColor: 'white',
     current: (plan: string) => plan === 'pro',
   },
@@ -28,7 +28,7 @@ const PLANS = [
     price: '€349',
     scans: '5,000 scans / month',
     features: ['Everything in Pro', 'Dedicated account manager', 'SLA 99.9%', 'On-premise option'],
-    color: '#0D1F17',
+    color: '#0B1C2E',
     textColor: 'white',
     current: (plan: string) => plan === 'enterprise',
   },
@@ -53,7 +53,7 @@ export default function PlanPage() {
   const used = me?.scans_this_month ?? user?.scans_this_month ?? 0
   const limit = me?.scans_limit ?? user?.scans_limit ?? 200
   const pct = Math.min(100, Math.round((used / limit) * 100))
-  const barColor = pct >= 90 ? '#EF4444' : pct >= 70 ? '#F59E0B' : '#00B37E'
+  const barColor = pct >= 90 ? '#EF4444' : pct >= 70 ? '#F59E0B' : '#2563EB'
 
   const handleLogout = () => {
     logout()
@@ -64,7 +64,7 @@ export default function PlanPage() {
     <div className="flex flex-col h-full">
       <header className="flex items-center justify-between px-6 py-3.5 bg-white border-b border-blue-100/60">
         <div>
-          <h1 className="text-sm font-semibold" style={{ color: '#0D1F17' }}>My Plan</h1>
+          <h1 className="text-sm font-semibold" style={{ color: '#0B1C2E' }}>My Plan</h1>
           <p className="text-[11px] text-slate-400">Manage your subscription and account</p>
         </div>
       </header>
@@ -74,11 +74,11 @@ export default function PlanPage() {
         {/* Account card */}
         <div className="bg-white border border-blue-50 rounded-2xl p-5 flex items-center gap-4">
           <div className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 text-lg font-bold text-white"
-               style={{ background: 'linear-gradient(135deg, #00E5A0, #00B37E)' }}>
+               style={{ background: 'linear-gradient(135deg, #3B82F6, #2563EB)' }}>
             {(user?.name ?? 'U')[0].toUpperCase()}
           </div>
           <div className="flex-1">
-            <p className="text-sm font-semibold" style={{ color: '#0D1F17' }}>{user?.name ?? '—'}</p>
+            <p className="text-sm font-semibold" style={{ color: '#0B1C2E' }}>{user?.name ?? '—'}</p>
             <p className="text-xs" style={{ color: '#64748B' }}>{user?.email ?? '—'}</p>
             {me?.created_at && (
               <p className="text-[11px] mt-0.5" style={{ color: '#94A3B8' }}>
@@ -101,21 +101,21 @@ export default function PlanPage() {
               Usage this month
             </p>
             <span className="text-xs font-semibold px-2.5 py-1 rounded-full capitalize"
-                  style={{ background: '#D6F5EC', color: '#00B37E' }}>
+                  style={{ background: '#D6F5EC', color: '#2563EB' }}>
               Plan {plan}
             </span>
           </div>
 
           {loading ? (
-            <div className="flex items-center gap-2 text-sm" style={{ color: '#00B37E' }}>
+            <div className="flex items-center gap-2 text-sm" style={{ color: '#2563EB' }}>
               <div className="w-4 h-4 border-2 rounded-full animate-spin"
-                   style={{ borderColor: '#00B37E', borderTopColor: 'transparent' }} />
+                   style={{ borderColor: '#2563EB', borderTopColor: 'transparent' }} />
               Loading...
             </div>
           ) : (
             <>
               <div className="flex items-end justify-between mb-2">
-                <span className="text-3xl font-bold" style={{ color: '#0D1F17' }}>{used}</span>
+                <span className="text-3xl font-bold" style={{ color: '#0B1C2E' }}>{used}</span>
                 <span className="text-sm" style={{ color: '#94A3B8' }}>/ {limit} scans</span>
               </div>
               <div className="h-2.5 rounded-full overflow-hidden" style={{ background: '#D6F5EC' }}>
@@ -141,7 +141,7 @@ export default function PlanPage() {
                 <div key={p.name}
                      className="rounded-2xl p-5 border-2 relative transition-all"
                      style={{
-                       borderColor: isCurrent ? p.color === '#D6F5EC' ? '#00B37E' : p.color : '#D6F5EC',
+                       borderColor: isCurrent ? p.color === '#D6F5EC' ? '#2563EB' : p.color : '#D6F5EC',
                        background: p.color,
                      }}>
                   {isCurrent && (
@@ -169,7 +169,7 @@ export default function PlanPage() {
                       onClick={() => alert('Contact us: kontakt@ikzocr.pl')}
                       className="w-full py-2 rounded-xl text-xs font-semibold transition-all hover:opacity-90"
                       style={{
-                        background: p.color === '#D6F5EC' ? '#00B37E' : 'rgba(255,255,255,0.2)',
+                        background: p.color === '#D6F5EC' ? '#2563EB' : 'rgba(255,255,255,0.2)',
                         color: p.color === '#D6F5EC' ? 'white' : p.textColor,
                         border: '1px solid rgba(255,255,255,0.3)',
                       }}>
@@ -186,7 +186,7 @@ export default function PlanPage() {
         <div className="rounded-2xl p-4 border" style={{ background: '#F5F8F6', borderColor: '#B3EDD8' }}>
           <p className="text-xs font-semibold mb-1" style={{ color: '#007A57' }}>Questions about your plan or invoice?</p>
           <p className="text-xs" style={{ color: '#64748B' }}>
-            Write to <a href="mailto:kontakt@ikzocr.pl" className="font-medium" style={{ color: '#00B37E' }}>kontakt@ikzocr.pl</a>
+            Write to <a href="mailto:kontakt@ikzocr.pl" className="font-medium" style={{ color: '#2563EB' }}>kontakt@ikzocr.pl</a>
             {' '}— we respond within 24h on business days.
           </p>
         </div>

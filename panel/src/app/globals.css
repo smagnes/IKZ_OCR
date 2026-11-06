@@ -3,7 +3,7 @@
 @tailwind components;
 @tailwind utilities;
 
-:root { --brand: #00B37E; }
+:root { --brand: #2563EB; }
 
 * { box-sizing: border-box; }
 

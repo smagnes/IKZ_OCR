@@ -8,7 +8,7 @@ const TYPE_LABELS: Record<string, string> = {
   ekg: 'EKG', skierowanie: 'Skierowanie', rtg_usg: 'RTG/USG', inny: 'Inne',
 }
 
-const OCEAN_COLORS = ['#00B37E', '#00E5A0', '#007A57', '#4AE0A8', '#075985', '#B3EDD8', '#0C4A6E']
+const OCEAN_COLORS = ['#2563EB', '#3B82F6', '#007A57', '#60A5FA', '#075985', '#B3EDD8', '#0C4A6E']
 
 export default function StatisticsPage() {
   const [stats, setStats] = useState<Stats | null>(null)
@@ -20,9 +20,9 @@ export default function StatisticsPage() {
 
   if (loading) return (
     <div className="flex items-center justify-center h-full">
-      <div className="flex items-center gap-3 text-sm" style={{ color: '#00B37E' }}>
+      <div className="flex items-center gap-3 text-sm" style={{ color: '#2563EB' }}>
         <div className="w-5 h-5 border-2 rounded-full animate-spin"
-             style={{ borderColor: '#00B37E', borderTopColor: 'transparent' }} />
+             style={{ borderColor: '#2563EB', borderTopColor: 'transparent' }} />
         Loading statistics...
       </div>
     </div>
@@ -46,7 +46,7 @@ export default function StatisticsPage() {
     <div className="flex flex-col h-full">
       <header className="flex items-center justify-between px-6 py-3.5 bg-white border-b border-blue-100/60">
         <div>
-          <h1 className="text-sm font-semibold" style={{ color: '#0D1F17' }}>Statystyki</h1>
+          <h1 className="text-sm font-semibold" style={{ color: '#0B1C2E' }}>Statystyki</h1>
           <p className="text-[11px] text-slate-400">Analiza skanowań i skuteczność OCR</p>
         </div>
         <select className="text-xs border border-blue-100 rounded-xl px-3 py-1.5 text-slate-600 bg-white focus:outline-none focus:ring-2 focus:ring-sky-200">
@@ -64,11 +64,11 @@ export default function StatisticsPage() {
               <div className="flex items-center justify-between mb-2">
                 <span className="text-base">{k.icon}</span>
                 <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
-                      style={{ background: '#D6F5EC', color: '#00B37E' }}>
+                      style={{ background: '#D6F5EC', color: '#2563EB' }}>
                   {k.delta}
                 </span>
               </div>
-              <p className="text-2xl font-bold" style={{ color: '#0D1F17' }}>{k.value}</p>
+              <p className="text-2xl font-bold" style={{ color: '#0B1C2E' }}>{k.value}</p>
               <p className="text-[11px] text-slate-400 mt-0.5">{k.label}</p>
             </div>
           ))}
@@ -91,7 +91,7 @@ export default function StatisticsPage() {
                 />
                 <Bar dataKey="value" radius={[6, 6, 0, 0]}>
                   {barData.map((_, i) => (
-                    <Cell key={i} fill={i === 0 ? '#00B37E' : i === 1 ? '#00E5A0' : '#4AE0A8'} />
+                    <Cell key={i} fill={i === 0 ? '#2563EB' : i === 1 ? '#3B82F6' : '#60A5FA'} />
                   ))}
                 </Bar>
               </BarChart>
@@ -131,9 +131,9 @@ export default function StatisticsPage() {
                   <span className="text-sm text-slate-700 w-36">{icons[k] ?? '•'} {labels[k] ?? k}</span>
                   <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ background: '#D6F5EC' }}>
                     <div className="h-full rounded-full transition-all"
-                         style={{ width: `${pct}%`, background: 'linear-gradient(90deg, #00E5A0, #00B37E)' }} />
+                         style={{ width: `${pct}%`, background: 'linear-gradient(90deg, #3B82F6, #2563EB)' }} />
                   </div>
-                  <span className="text-sm font-semibold w-16 text-right" style={{ color: '#0D1F17' }}>{v.toLocaleString()}</span>
+                  <span className="text-sm font-semibold w-16 text-right" style={{ color: '#0B1C2E' }}>{v.toLocaleString()}</span>
                   <span className="text-xs text-slate-400 w-10 text-right">{pct}%</span>
                 </div>
               )
