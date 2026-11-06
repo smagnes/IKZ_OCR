@@ -1,15 +1,14 @@
 import { getToken, setAuth, AuthUser, DEMO_API_KEY, isDemo } from './auth'
 
 const BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000'
-const DEMO_KEY = process.env.NEXT_PUBLIC_API_KEY ?? 'mk_prod_demo123'
 
 function apiKeyHeaders(extra: Record<string, string> = {}) {
   let key: string | null = null
   if (typeof window !== 'undefined') {
-    // Sesja demo zawsze używa własnego, izolowanego klucza
     key = isDemo() ? localStorage.getItem(DEMO_API_KEY) : localStorage.getItem('ikzocr_api_key')
   }
-  return { Authorization: `Bearer ${key || DEMO_KEY}`, ...extra }
+  if (!key) return extra
+  return { Authorization: `Bearer ${key}`, ...extra }
 }
 
 function jwtHeaders(extra: Record<string, string> = {}) {
@@ -22,7 +21,7 @@ function jwtHeaders(extra: Record<string, string> = {}) {
 export async function login(email: string, password: string): Promise<{ token: string; user: AuthUser }> {
   const res = await fetch(`${BASE}/auth/login`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'x-api-key': DEMO_KEY },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, password }),
   })
   if (!res.ok) {

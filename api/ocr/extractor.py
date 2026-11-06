@@ -7,6 +7,10 @@ import re
 from typing import Any, Dict, List, Optional
 
 
+def _mask_pesel(text: str) -> str:
+    return re.sub(r'\b(\d{6})\d{5}(\d{0})\b', lambda m: m.group(1) + '*****', text)
+
+
 def extract_structured(text: str, doc_type: str = "unknown") -> Dict[str, Any]:
     detected = _detect_type(text) if doc_type == "unknown" else doc_type
     return {
@@ -15,7 +19,7 @@ def extract_structured(text: str, doc_type: str = "unknown") -> Dict[str, Any]:
         "medications": _extract_medications(text),
         "dates": _extract_dates(text),
         "facility": _extract_facility(text),
-        "raw_text": text,
+        "raw_text": _mask_pesel(text),
     }
 
 

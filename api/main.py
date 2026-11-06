@@ -1,4 +1,5 @@
 import asyncio
+import re
 import time
 import uuid
 import logging
@@ -369,7 +370,15 @@ async def scan_document(
     t_start = time.perf_counter()
 
     try:
-        raw_text = run_ocr_on_bytes(data, file.content_type)
+        import asyncio
+        raw_text = await asyncio.wait_for(
+            asyncio.to_thread(run_ocr_on_bytes, data, file.content_type),
+            timeout=55.0,
+        )
+        raw_text = re.sub(r'\b(\d{6})\d{5}\b', lambda m: m.group(1) + '*****', raw_text)
+    except asyncio.TimeoutError:
+        logger.error("OCR timeout %s", scan_id)
+        raise HTTPException(status_code=504, detail="Przekroczono czas przetwarzania OCR (>55s). Spróbuj z mniejszym plikiem.")
     except Exception as exc:
         logger.error("OCR error %s: %s", scan_id, exc, exc_info=True)
         raise HTTPException(status_code=500, detail="Błąd przetwarzania OCR")

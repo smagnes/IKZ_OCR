@@ -179,8 +179,9 @@ export default function ApiKeysPage() {
                     <div className="flex items-center gap-2">
                       <button onClick={() => copy(String(k.key_prefix ?? ''), String(k.key_id ?? ''))}
                         className="text-xs px-2.5 py-1.5 rounded-lg border transition-colors"
+                        title="Kopiuje tylko prefiks — pełny klucz był widoczny tylko przy tworzeniu"
                         style={{ borderColor: '#B3EDD8', color: copied === String(k.key_id) ? '#00B37E' : '#94A3B8' }}>
-                        {copied === String(k.key_id) ? '✓ Skopiowano' : 'Kopiuj'}
+                        {copied === String(k.key_id) ? '✓ Skopiowano prefiks' : 'Kopiuj prefiks'}
                       </button>
                       <button onClick={() => { setWebhookEdit(String(k.key_id)); setWebhookVal(String(k.webhook_url ?? '')) }}
                         className="text-xs px-2.5 py-1.5 rounded-lg border transition-colors"
