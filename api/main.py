@@ -33,8 +33,17 @@ from ocr.extractor import extract_structured
 import db
 from demo import RateLimiter, client_ip
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
+import contextvars
+_request_id_var: contextvars.ContextVar[str] = contextvars.ContextVar("request_id", default="-")
+
+class _RequestIdFilter(logging.Filter):
+    def filter(self, record):
+        record.rid = _request_id_var.get("-")
+        return True
+
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s [%(rid)s] %(message)s")
 logger = logging.getLogger(__name__)
+logger.addFilter(_RequestIdFilter())
 
 def _validate_webhook_url(url: str) -> None:
     """Blokuje SSRF — webhook nie może wskazywać na sieć wewnętrzną."""
@@ -192,6 +201,15 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.middleware("http")
+async def request_id_middleware(request: Request, call_next):
+    rid = request.headers.get("X-Request-ID") or str(uuid.uuid4())[:8]
+    _request_id_var.set(rid)
+    response = await call_next(request)
+    response.headers["X-Request-ID"] = rid
+    return response
 
 
 async def verify_api_key(request: Request, authorization: str = Header(...)) -> dict:
