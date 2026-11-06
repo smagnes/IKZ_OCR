@@ -1,0 +1,11 @@
+# Crontab VM (smgraphic4u@34.41.15.71)
+# Wgraj: crontab infra/crontab.txt
+
+# Health check API + Panel co 2 minuty
+*/2 * * * * /home/smgraphic4u/ikzocr-health-check.sh >> /home/smgraphic4u/ikzocr-health.log 2>&1
+
+# Ping Supabase co 12h żeby połączenie nie wygasło
+0 */12 * * * docker exec medyk_ocr_api python3 -c "import asyncio,asyncpg,os; asyncio.run(asyncpg.connect(os.environ.get('DATABASE_URL','')).then(lambda c: c.fetchval('SELECT 1')))" >> /home/smgraphic4u/supabase_ping.log 2>&1
+
+# Docker cleanup raz w tygodniu (niedziela 3:00) żeby dysk nie puchnie
+0 3 * * 0 docker system prune -f >> /home/smgraphic4u/docker-prune.log 2>&1
