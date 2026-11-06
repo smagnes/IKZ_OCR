@@ -67,7 +67,7 @@ IKZOCR przetwarza dokumenty medyczne **wyłącznie lokalnie**, na własnej infra
 | Podmiot | Rola | Lokalizacja | Dane medyczne |
 |---------|------|-------------|---------------|
 | Supabase Ireland Ltd. | Baza danych (PostgreSQL) | UE (Frankfurt) | Tak — wyniki OCR, dane kont |
-| [Dostawca serwera fizycznego] | Kolokacja / hosting | Polska (Gdańsk) | Tak — wszystkie dane w spoczynku |
+| Własna infrastruktura (serwer DELL, serwerownia Gdańsk) | Hosting on-premise | Polska (Gdańsk) | Tak — wszystkie dane w spoczynku |
 | Przelewy24 / Stripe | Płatności | UE | Nie — tylko dane rozliczeniowe |
 
 Z każdym podmiotem przetwarzającym podpisana jest umowa powierzenia przetwarzania danych (DPA) zgodna z art. 28 RODO.
