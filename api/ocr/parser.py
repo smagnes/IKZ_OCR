@@ -636,8 +636,9 @@ def _extract_tabular_labs(text: str) -> tuple[dict, list[str]]:
     found: set = set()
 
     for i, line in enumerate(lines):
-        # Strip footnote markers like (1,3,2) or (1,6,5)
-        line_clean = re.sub(r'\s*\(\d[,.\d]*\)\s*', '', line).strip()
+        # Strip footnote markers like (1,3,2) or (1,6,5) — keep surrounding spaces
+        # so column gaps are preserved for inline value extraction
+        line_clean = re.sub(r'\(\d[,.\d]*\)', '', line).strip()
         line_lower = line_clean.lower()
 
         matched_display = None
@@ -670,6 +671,26 @@ def _extract_tabular_labs(text: str) -> tuple[dict, list[str]]:
         # Numeric value: try AFTER first (row-by-row OCR), then BEFORE (column OCR)
         all_prefixes = {prefix for _, prefix in _KNOWN_LAB_PARAMS}
         value_str = None
+
+        # 0. Inline value on same line (pdftotext wide-column format):
+        #    "Cholesterol całkowity    113,1    mg/dl    115    190    L"
+        #    Value is separated from param name by 4+ spaces (column gap)
+        inline_m = re.search(r'[ \t]{4,}(\d+[,.]?\d+)', line_clean)
+        if inline_m:
+            value_str = inline_m.group(1)
+            # Also try to extract unit inline
+            if not unit:
+                unit_m = re.search(
+                    r'[ \t]{2,}([a-zA-Z/%µ][a-zA-Z/%µ\d\.\*]*(?:/[a-zA-Z\d]+)?)(?:[ \t]|$)',
+                    line_clean[inline_m.end():]
+                )
+                if unit_m and _UNIT_LINE_RE.match(unit_m.group(1)):
+                    unit = unit_m.group(1).lower()
+            # Extract flag inline (L = low, H = high at end of line)
+            if not flag:
+                flag_m = re.search(r'[ \t]+([LH~])\s*$', line_clean, re.I)
+                if flag_m and flag_m.group(1).upper() in ('L', 'H'):
+                    flag = flag_m.group(1).upper()
 
         # 1. Scan lines AFTER param name (Toruń format, row-by-row)
         for w in after:
