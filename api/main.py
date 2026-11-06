@@ -36,6 +36,24 @@ from demo import RateLimiter, client_ip
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 logger = logging.getLogger(__name__)
 
+def _validate_webhook_url(url: str) -> None:
+    """Blokuje SSRF — webhook nie może wskazywać na sieć wewnętrzną."""
+    import ipaddress, socket
+    from urllib.parse import urlparse
+    parsed = urlparse(url)
+    if parsed.scheme not in ("http", "https"):
+        raise HTTPException(status_code=400, detail="Webhook URL musi używać http lub https")
+    host = parsed.hostname or ""
+    if host in ("localhost", "127.0.0.1", "::1") or host.endswith(".local"):
+        raise HTTPException(status_code=400, detail="Webhook URL nie może wskazywać na localhost")
+    try:
+        ip = ipaddress.ip_address(socket.gethostbyname(host))
+        if ip.is_private or ip.is_loopback or ip.is_link_local or ip.is_reserved:
+            raise HTTPException(status_code=400, detail="Webhook URL wskazuje na sieć wewnętrzną")
+    except (socket.gaierror, ValueError):
+        pass  # Nie można rozwiązać DNS — pozwalamy, serwer odrzuci przy wywołaniu
+
+
 async def send_webhook(url: str, payload: dict, secret: str | None = None) -> None:
     try:
         import hashlib, hmac as _hmac, json as _json
@@ -111,6 +129,8 @@ def create_token(user_id: str, email: str, name: str,
 demo_session_limiter = RateLimiter(settings.demo_sessions_per_ip_per_hour, 3600)
 demo_scan_limiter = RateLimiter(settings.demo_scans_per_ip_per_hour, 3600)
 demo_request_limiter = RateLimiter(settings.demo_requests_per_ip_per_minute, 60)
+# Brute force protection: 10 prób logowania / IP / 15 minut
+login_limiter = RateLimiter(10, 900)
 
 DEMO_FORBIDDEN = "Funkcja niedostępna w wersji demo"
 
@@ -292,17 +312,18 @@ async def end_demo(jwt_user: dict = Depends(verify_jwt_user)):
     return {"deleted": True, **result}
 
 
-@app.post("/auth/login", summary="Logowanie")
-async def login(body: LoginBody):
-    blocked = {e.strip().lower() for e in settings.blocked_login_emails.split(",") if e.strip()}
+@app.post(“/auth/login”, summary=”Logowanie”)
+async def login(body: LoginBody, request: Request):
+    login_limiter.check(_ip(request), “Zbyt wiele prób logowania z tego adresu. Spróbuj za 15 minut.”)
+    blocked = {e.strip().lower() for e in settings.blocked_login_emails.split(“,”) if e.strip()}
     if body.email.lower() in blocked:
         raise HTTPException(
             status_code=403,
-            detail="Wspólne konto demo zostało wyłączone. Użyj przycisku „Wypróbuj demo”.",
+            detail=”Wspólne konto demo zostało wyłączone. Użyj przycisku „Wypróbuj demo”.”,
         )
     user = await db.get_user_by_email(body.email.lower())
-    if not user or not _verify_pw(body.password, user["password_hash"]):
-        raise HTTPException(status_code=401, detail="Błędny email lub hasło")
+    if not user or not _verify_pw(body.password, user[“password_hash”]):
+        raise HTTPException(status_code=401, detail=”Błędny email lub hasło”)
 
     key_data = await db.get_user_api_key(str(user["id"]))
     plan = key_data["plan"] if key_data else "starter"
@@ -369,6 +390,18 @@ async def scan_document(
     data = await file.read()
     if len(data) > MAX_SIZE_MB * 1024 * 1024:
         raise HTTPException(status_code=413, detail=f"Plik zbyt duży (maks. {MAX_SIZE_MB} MB)")
+
+    # Walidacja magic bytes — nie ufamy Content-Type z klienta
+    _MAGIC = [
+        (b"%PDF", "application/pdf"),
+        (b"\xff\xd8\xff", "image/jpeg"),
+        (b"\x89PNG", "image/png"),
+        (b"GIF8", "image/gif"),
+        (b"II*\x00", "image/tiff"),
+        (b"MM\x00*", "image/tiff"),
+    ]
+    if not any(data[:4].startswith(magic[:4]) for magic, _ in _MAGIC):
+        raise HTTPException(status_code=415, detail="Nierozpoznany format pliku (sprawdzono magic bytes)")
 
     if key_record.get("is_demo"):
         if x_ikz_silos_id:
@@ -702,6 +735,8 @@ class WebhookBody(BaseModel):
 @app.patch("/v1/api-keys/{key_id}/webhook", summary="Ustaw URL webhooka dla klucza")
 async def update_webhook(key_id: str, body: WebhookBody, key_record: dict = Depends(verify_api_key)):
     forbid_demo(key_record)
+    if body.webhook_url:
+        _validate_webhook_url(body.webhook_url)
     await db.set_webhook_url(key_id, body.webhook_url or None, body.webhook_secret or None)
     return {"ok": True, "webhook_url": body.webhook_url, "hmac_enabled": bool(body.webhook_secret)}
 

@@ -18,6 +18,10 @@ ENV PYTHONUNBUFFERED=1
 ENV OCR_ENGINE=claude
 ENV PRELOAD_MODELS=false
 
+# Non-root user — kontener nie ma uprawnień root
+RUN useradd -m -u 1001 appuser && chown -R appuser:appuser /app
+USER appuser
+
 EXPOSE 8000
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=120s \
