@@ -154,6 +154,9 @@ app = FastAPI(
     version="1.0.0",
     description="OCR dla dokumentów medycznych — pierwsze w Polsce rozwiązanie AI dla branży medycznej",
     lifespan=lifespan,
+    openapi_url=None,
+    docs_url=None,
+    redoc_url=None,
 )
 
 app.add_middleware(
