@@ -1,0 +1,10 @@
+paddleocr
+paddlepaddle
+numpy
+transformers>=4.44.0
+torch
+Pillow
+pdf2image
+pypdf
+anthropic>=0.40.0
+python-dotenv
