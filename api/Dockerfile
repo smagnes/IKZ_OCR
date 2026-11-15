@@ -6,10 +6,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     poppler-utils curl && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt .
-RUN pip install --no-cache-dir \
-    fastapi "uvicorn[standard]" python-multipart \
-    pydantic pydantic-settings pypdf pdf2image asyncpg redis nats-py \
-    "python-jose[cryptography]" bcrypt httpx python-dotenv anthropic Pillow requests
+RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
