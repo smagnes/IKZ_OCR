@@ -23,7 +23,7 @@ jobs:
           cache: pip
 
       - name: Install dependencies
-        run: pip install --no-cache-dir fastapi "uvicorn[standard]" python-multipart pydantic pydantic-settings pypdf pdf2image asyncpg redis nats-py "python-jose[cryptography]" bcrypt httpx python-dotenv anthropic Pillow requests ruff
+        run: pip install --no-cache-dir -r requirements.txt -r requirements.ci.txt
 
       - name: Lint (ruff)
         run: ruff check . --select E,F,W --ignore E501

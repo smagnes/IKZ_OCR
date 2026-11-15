@@ -116,30 +116,31 @@ async def save_scan(
     exam_date: Optional[str],
     fields: dict,
     alerts: list[str],
-    raw_text: str,
     confidence_overall: float,
     processing_time_ms: int,
     ikz_silos_id: Optional[str],
     ikz_examination_id: Optional[int],
     source: str = "api",
 ) -> None:
+    # raw_text celowo nie jest zapisywane — minimalizacja danych RODO art. 5(1)(c)
+    # dane pacjenta nie trafiają do bazy w surowej formie
     import json
     await get_pool().execute(
         """
         INSERT INTO scans (
             id, api_key_id, doc_type, doc_type_label,
             patient, pesel_masked, doctor, facility, exam_date,
-            fields, alerts, raw_text,
+            fields, alerts,
             confidence_overall, processing_time_ms,
             ikz_silos_id, ikz_examination_id, source
         ) VALUES (
             $1,$2,$3,$4,$5,$6,$7,$8,$9,
-            $10::jsonb,$11,$12,$13,$14,$15,$16,$17
+            $10::jsonb,$11,$12,$13,$14,$15,$16
         )
         """,
         scan_id, api_key_id, doc_type, doc_type_label,
         patient, pesel_masked, doctor, facility, exam_date,
-        json.dumps(fields), alerts, raw_text[:4000],
+        json.dumps(fields), alerts,
         confidence_overall, processing_time_ms,
         ikz_silos_id, ikz_examination_id, source,
     )

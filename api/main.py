@@ -482,7 +482,6 @@ async def scan_document(
         exam_date=exam_date,
         fields=fields,
         alerts=alerts,
-        raw_text=raw_text,
         confidence_overall=overall,
         processing_time_ms=elapsed_ms,
         ikz_silos_id=x_ikz_silos_id,
@@ -493,6 +492,8 @@ async def scan_document(
     user_id = str(key_record["user_id"]) if key_record.get("user_id") else None
     await db.write_audit("scan_created", user_id=user_id, scan_id=scan_id,
                          ip_addr=_ip(request), user_agent=request.headers.get("user-agent"))
+
+    requires_human_review = overall < 0.75 or len(alerts) > 0
 
     response = ScanResponse(
         scan_id=scan_id,
@@ -508,6 +509,7 @@ async def scan_document(
         fields=fields,
         alerts=alerts,
         raw_text=raw_text[:2000],
+        requires_human_review=requires_human_review,
         processing_time_ms=elapsed_ms,
         ikz_examination_id=ikz_examination_id,
     )

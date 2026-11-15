@@ -47,6 +47,7 @@ class ScanResponse(BaseModel):
     fields: dict
     alerts: list[str]
     raw_text: str
+    requires_human_review: bool = False
     processing_time_ms: int
     ikz_examination_id: Optional[int] = None
 

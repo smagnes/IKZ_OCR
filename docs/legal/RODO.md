@@ -5,16 +5,16 @@
 
 ## 1. Administrator danych
 
-**SZOP sp. z o.o.**  
-ul. [ADRES]  
-[KOD POCZTOWY] [MIASTO]  
-NIP: [NIP]  
-KRS: [KRS]  
+**KONKLUDI MED PROSTA SPÓŁKA AKCYJNA**  
+ul. Czesława Miłosza 51/36  
+80-126 Gdańsk  
+NIP: 5833479868  
+KRS: 0001040347  
 Email: rodo@ikzocr.pl
 
 ## 2. Inspektor Ochrony Danych
 
-IOD: [IMIĘ NAZWISKO]  
+IOD: [DO WYZNACZENIA]  
 Email: iod@ikzocr.pl
 
 ## 3. Kategorie przetwarzanych danych
@@ -60,22 +60,25 @@ System IKZOCR przetwarza następujące kategorie danych:
 
 ### Architektura przetwarzania
 
-IKZOCR przetwarza dokumenty medyczne **wyłącznie lokalnie**, na własnej infrastrukturze SZOP sp. z o.o. zlokalizowanej w Polsce. Silnik OCR działa on-premise — żaden dokument ani fragment jego treści nie jest przesyłany do zewnętrznych serwisów chmurowych.
+IKZOCR przetwarza dokumenty medyczne na własnej infrastrukturze KONKLUDI MED PSA zlokalizowanej w Polsce (GCP, region europe-central2). Obraz dokumentu trafia na serwer Konkludi, gdzie następuje anonimizacja danych osobowych pacjenta (PESEL, imię, nazwisko, adres), a następnie zanonimizowany tekst jest przekazywany do zewnętrznego serwisu AI w celu ekstrakcji struktury badań.
+
+**Dane osobowe pacjentów nie są przekazywane do zewnętrznych podmiotów** — do serwisu AI przesyłane są wyłącznie zanonimizowane wyniki badań (wartości liczbowe, nazwy parametrów, jednostki, zakresy referencyjne).
 
 **Podmioty przetwarzające (podprocesory):**
 
 | Podmiot | Rola | Lokalizacja | Dane medyczne |
 |---------|------|-------------|---------------|
 | Supabase Ireland Ltd. | Baza danych (PostgreSQL) | UE (Frankfurt) | Tak — wyniki OCR, dane kont |
-| Własna infrastruktura (serwer DELL, serwerownia Gdańsk) | Hosting on-premise | Polska (Gdańsk) | Tak — wszystkie dane w spoczynku |
+| Google Cloud Platform (GCP) | Hosting serwera API | UE (Warszawa, europe-central2) | Tak — wszystkie dane w transmisji i spoczynku |
+| Zewnętrzny serwis przetwarzania AI | Ekstrakcja struktury badań z tekstu | UE/USA — [WERYFIKACJA DPA] | Nie — wyłącznie dane zanonimizowane |
 | Przelewy24 / Stripe | Płatności | UE | Nie — tylko dane rozliczeniowe |
 
 Z każdym podmiotem przetwarzającym podpisana jest umowa powierzenia przetwarzania danych (DPA) zgodna z art. 28 RODO.
 
-Administrator **nie przekazuje danych do państw trzecich** (poza UE/EOG).
+> ⚠️ **TODO (przed pierwszym kontraktem szpitalnym):** Podpisać DPA z dostawcą serwisu AI oraz zweryfikować lokalizację przetwarzania. Jeśli serwer AI zlokalizowany poza EOG — wymagane standardowe klauzule umowne (SCC).
 
 ### W wersji On-Premise
-Dane **nie opuszczają** infrastruktury klienta. Administrator (SZOP sp. z o.o.) nie ma dostępu do danych medycznych klientów na instalacjach lokalnych.
+Dane **nie opuszczają** infrastruktury klienta. Administrator (Konkludi Med PSA) nie ma dostępu do danych medycznych klientów na instalacjach lokalnych.
 
 ## 7. Prawa osób, których dane dotyczą
 
@@ -105,7 +108,7 @@ Stosowane środki techniczne i organizacyjne:
 ## 9. Naruszenia ochrony danych
 
 W przypadku naruszenia:
-1. SZOP sp. z o.o. zgłosi naruszenie do UODO w ciągu 72 godzin (art. 33 RODO)
+1. Konkludi Med PSA zgłosi naruszenie do UODO w ciągu 72 godzin (art. 33 RODO)
 2. Poinformuje osoby, których naruszenie dotyczy, jeśli ryzyko jest wysokie (art. 34 RODO)
 3. Przeprowadzi postępowanie wyjaśniające i wdroży środki naprawcze
 
