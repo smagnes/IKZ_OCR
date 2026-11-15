@@ -20,7 +20,8 @@ import bcrypt
 import httpx
 from fastapi import BackgroundTasks
 from fastapi.responses import StreamingResponse
-from jose import JWTError, jwt
+import jwt as _jwt
+from jwt.exceptions import InvalidTokenError as JWTError
 from pydantic import BaseModel
 from pydantic_settings import BaseSettings
 
@@ -131,7 +132,7 @@ def create_token(user_id: str, email: str, name: str,
     }
     if demo:
         payload["demo"] = True
-    return jwt.encode(payload, settings.jwt_secret, algorithm=JWT_ALGO)
+    return _jwt.encode(payload, settings.jwt_secret, algorithm=JWT_ALGO)
 
 
 # Limitery demo (w pamięci procesu; API działa na jednym workerze)
@@ -153,7 +154,7 @@ async def verify_jwt_user(request: Request, authorization: str = Header(...)) ->
         raise HTTPException(status_code=401, detail="Brakuje tokenu Bearer")
     token = authorization.removeprefix("Bearer ").strip()
     try:
-        payload = jwt.decode(token, settings.jwt_secret, algorithms=[JWT_ALGO])
+        payload = _jwt.decode(token, settings.jwt_secret, algorithms=[JWT_ALGO])
     except JWTError:
         raise HTTPException(status_code=401, detail="Nieprawidłowy lub wygasły token")
     if payload.get("demo"):
@@ -341,8 +342,12 @@ async def login(body: LoginBody, request: Request):
         )
     user = await db.get_user_by_email(body.email.lower())
     if not user or not _verify_pw(body.password, user["password_hash"]):
+        await db.write_audit("login_failed", ip_addr=_ip(request),
+                             user_agent=request.headers.get("user-agent"))
         raise HTTPException(status_code=401, detail="Błędny email lub hasło")
 
+    await db.write_audit("login", user_id=str(user["id"]), ip_addr=_ip(request),
+                         user_agent=request.headers.get("user-agent"))
     key_data = await db.get_user_api_key(str(user["id"]))
     plan = key_data["plan"] if key_data else "starter"
     scans_limit = key_data["scans_limit"] if key_data else 200
@@ -484,6 +489,10 @@ async def scan_document(
         ikz_examination_id=ikz_examination_id,
         source=source,
     )
+
+    user_id = str(key_record["user_id"]) if key_record.get("user_id") else None
+    await db.write_audit("scan_created", user_id=user_id, scan_id=scan_id,
+                         ip_addr=_ip(request), user_agent=request.headers.get("user-agent"))
 
     response = ScanResponse(
         scan_id=scan_id,

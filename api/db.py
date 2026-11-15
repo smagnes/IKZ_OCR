@@ -246,6 +246,39 @@ async def ensure_schema():
     await pool.execute(
         "CREATE INDEX IF NOT EXISTS idx_users_demo_expires ON users(expires_at) WHERE is_demo"
     )
+    await pool.execute("""
+        CREATE TABLE IF NOT EXISTS audit_log (
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            user_id UUID REFERENCES users(id) ON DELETE SET NULL,
+            scan_id UUID REFERENCES scans(id) ON DELETE SET NULL,
+            action VARCHAR(50) NOT NULL,
+            ip_addr INET,
+            user_agent TEXT,
+            created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        )
+    """)
+    await pool.execute("CREATE INDEX IF NOT EXISTS idx_audit_log_user_id ON audit_log(user_id)")
+    await pool.execute("CREATE INDEX IF NOT EXISTS idx_audit_log_scan_id ON audit_log(scan_id)")
+    await pool.execute("CREATE INDEX IF NOT EXISTS idx_audit_log_created_at ON audit_log(created_at DESC)")
+
+
+async def write_audit(
+    action: str,
+    user_id: Optional[str] = None,
+    scan_id: Optional[str] = None,
+    ip_addr: Optional[str] = None,
+    user_agent: Optional[str] = None,
+) -> None:
+    try:
+        await get_pool().execute(
+            """
+            INSERT INTO audit_log (user_id, scan_id, action, ip_addr, user_agent)
+            VALUES ($1, $2, $3, $4::inet, $5)
+            """,
+            user_id, scan_id, action, ip_addr, user_agent,
+        )
+    except Exception as exc:
+        logger.warning("audit_log write failed: %s", exc)
 
 
 async def create_user(name: str, email: str, password_hash: str) -> dict:

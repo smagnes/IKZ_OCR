@@ -28,6 +28,12 @@ jobs:
       - name: Lint (ruff)
         run: ruff check . --select E,F,W --ignore E501
 
+      - name: Security scan (bandit)
+        run: pip install bandit && bandit -r . -ll -x ./tests --quiet
+
+      - name: CVE scan (pip-audit)
+        run: pip install pip-audit && pip-audit -r requirements.txt
+
       - name: Syntax check
         run: python -m py_compile main.py db.py demo.py
 

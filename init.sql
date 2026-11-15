@@ -59,5 +59,19 @@ CREATE TABLE IF NOT EXISTS users (
 
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
 
+CREATE TABLE IF NOT EXISTS audit_log (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID REFERENCES users(id) ON DELETE SET NULL,
+    scan_id UUID REFERENCES scans(id) ON DELETE SET NULL,
+    action VARCHAR(50) NOT NULL,  -- 'scan_created', 'scan_viewed', 'scan_deleted', 'login', 'login_failed'
+    ip_addr INET,
+    user_agent TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_audit_log_user_id   ON audit_log(user_id);
+CREATE INDEX IF NOT EXISTS idx_audit_log_scan_id   ON audit_log(scan_id);
+CREATE INDEX IF NOT EXISTS idx_audit_log_created_at ON audit_log(created_at DESC);
+
 -- Demo keys are seeded by Python app on startup (db.seed_demo_keys)
 -- so that the hash matches the Python hashlib.sha256 implementation.
